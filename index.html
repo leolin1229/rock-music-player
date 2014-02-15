@@ -5,18 +5,19 @@
     <meta name="title" content="音乐播放器">
    	<meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Rock音乐播放器-为生活添上旋律</title>
+    <!-- icon地址 http://www.queyang.com/demo/glyphicons/ -->
     <link rel="stylesheet" type="text/css" href="dist/css/index.css">
     <link rel="stylesheet" type="text/css" href="dist/css/glyphicons.css">
 </head>
 <body>
 	<!-- 固定顶部导航 -->
 	<section id="menu">
-		<ul class="menu_list">
+		<ul class="menu-list">
 			<li id="openFile"><i class="icon-circle-plus"></i></li>
-			<li id="local" class="menu_active"><i class="icon-file"></i>&nbsp&nbsp本地音乐</li>
+			<li id="local" class="menu-active"><i class="icon-file"></i>&nbsp&nbsp本地音乐</li>
 			<li id="online"><i class="icon-cloud"></i>&nbsp&nbsp在线音乐</li>
 			<li id="search">
-				<input type="text" placeholder="请输入歌名、歌手..." class="search_input">
+				<input type="text" placeholder="请输入歌名、歌手..." class="search-input">
 				<i class="icon-search"></i>
 			</li>
 			<li id="QRCode"><i class="icon-qrcode"></i></li>
@@ -28,62 +29,90 @@
 
 	<!-- 底部 -->
 	<section>
-		<div id="playPanel" class="play_panel">
+		<div id="playPanel" class="play-panel">
 			<!-- 左侧面板 -->
-			<div class="left_panel" id="leftPanel">
-				<ul class="play_btn">
+			<div class="left-panel" id="leftPanel">
+				<ul class="play-btn">
 					<li class="prev">
-						<a class="ctrl_btn" hidefocus="true" title="上一首">
+						<a class="ctrl-btn" hidefocus="true" title="上一首">
 							<i class="icon-step-backward"></i>
 						</a>
 					</li>
 					<li class="play stop">
-						<a class="ctrl_btn" hidefocus="true" title="暂停">
+						<a class="ctrl-btn" hidefocus="true" title="暂停">
 							<i class="icon-pause"></i>
 						</a>
 					</li>
 					<li class="next">
-						<a class="ctrl_btn" hidefocus="true" title="下一首">
+						<a class="ctrl-btn" hidefocus="true" title="下一首">
 							<i class="icon-step-forward"></i>
 						</a>
 					</li>
 				</ul>
 			</div>
 			<!-- 右侧面板 -->
-			<div class="right_panel" id="rightPanel">
+			<div class="right-panel" id="rightPanel">
 				<!-- 播放模式 -->
-				<ul class="play_mode" id="playMode">
-					<li class="random_mode">
-						<a hidefocus="true" title="随机播放" class="ctrl_btn"><i class="icon-random"></i></a>
+				<ul class="play-mode" id="playMode">
+					<li class="random-mode">
+						<a hidefocus="true" title="随机播放" class="ctrl-btn"><i class="icon-random"></i></a>
 					</li>
-					<li class="single_mode">
-						<a hidefocus="true" title="单曲播放" class="ctrl_btn"><i class="icon-repeat"></i></a>
+					<li class="single-mode">
+						<a hidefocus="true" title="单曲播放" class="ctrl-btn"><i class="icon-repeat"></i></a>
 					</li>
-					<li class="list_mode">
-						<a hidefocus="true" title="循环播放" class="ctrl_btn"><i class="icon-retweet"></i></a>
+					<li class="list-mode">
+						<a hidefocus="true" title="循环播放" class="ctrl-btn"><i class="icon-retweet"></i></a>
 					</li>
 				</ul>
 				<!-- 音量调节 -->
-				<div class="volume" id="volumeWrap">
+				<div class="volume" id="volumeWrapper">
 					<!-- 音量按钮 -->
-					<a class="mute ctrl_btn muted" hidefocus="true" title="静音"><i class="icon-mute"></i></a>
-					<div class="vol_slider_wrap">
-						<div id="volSlider" class="vol_slider progress_bar">
+					<a class="mute ctrl-btn muted" hidefocus="true" title="静音"><i class="icon-mute"></i></a>
+					<div class="vol-slider-wrapper">
+						<div id="volSlider" class="vol-slider progress-bar">
 							<!-- 音量白色条 -->
-							<div class="vol_slider_range"></div>
-							<a class="vol_slider_handle" hidefocus="true"><i class="icon-riflescope"></i></a>
+							<div class="vol-slider-range"></div>
+							<a class="vol-slider-handle" hidefocus="true"><i class="icon-riflescope"></i></a>
 						</div>
 					</div>
 				</div>
 				<!-- 小功能 -->
 				<div class="widget">
 					<div class="fullscreen">
-						<a class="ctrl_btn" hidefocus="true" title="全屏"><i class="icon-fullscreen"></i></a>
+						<a class="ctrl-btn" hidefocus="true" title="全屏"><i class="icon-fullscreen"></i></a>
 					</div>
 				</div>
 			</div>
 			<!-- 中部面板 -->
-			<div class="main_panel" id="mainPanel"></div>
+			<div class="main-panel" id="mainPanel">
+				<div class="title-wrapper" id="playTitle">
+					<div style="overflow: hidden; float: left; margin-left: 20px; width: 140px;">
+						<div class="title">
+							<span class="songname">ABC</span>
+							<span class="split">-</span>
+							<span class="artist">leolin</span>
+						</div>
+					</div>
+				</div>
+				<!-- 时间控制条 -->
+				<div class="panel">
+					<div class="time" id="timeWrap">
+						<span class="current-time">00:00</span>
+						<span class="split">/</span>
+						<span class="total-time">10:00</span>
+					</div>
+					<div class="progress-wrapper">
+						<div id="progressSlider">
+							<!-- 时间条当前位置 -->
+							<div class="slider-range" style="width: 10%;"></div>
+							<!-- 时间条背景 -->
+							<div class="slider-bar" style="width: 100%;"></div>
+							<!-- 时间点 -->
+							<a class="slider-handle" hidefocus="true"><i class="icon-riflescope"></i></a>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 	</section>
     <script type="text/javascript" src="dist/js/jquery-2.1.0.js"></script>
