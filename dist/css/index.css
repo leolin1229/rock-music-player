@@ -1,0 +1,265 @@
+@charset "utf-8";
+/* reset */
+body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, form, fieldset, input, textarea, p, blockquote, th, td {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	background: none repeat scroll 0 0 #F4F4F4;
+	font-family: 'Helvetica Neue',Helvetica,'Arial CE',Arial,sans-serif;
+}
+
+*:focus { 
+	outline: none; 
+}
+
+ul, li {
+	padding: 0;
+	margin: 0;
+	list-style: none outside none;
+}
+
+li:hover, li:active, li {
+	outline: 0 none;
+}
+
+header, #menu, #footer, #playwrap {
+	position:fixed; 
+	width:100%; 
+	left:0; 
+	overflow:hidden;
+}
+
+header {
+	height:35px; 
+	top:0;
+	z-index:1000;
+	background:none repeat scroll 0 0 #F4F4F4;
+}
+
+#menu {
+	height:50px;
+	z-index:1000;
+	background: grey;
+}
+
+.menu_list {
+	color: #fff;
+	line-height: 50px;
+	font-size: 19px;
+}
+
+.menu_list #openFile, #QRCode, #setting {
+	width: 10%;
+}
+
+.menu_list #local, #online {
+	width: 25%;
+}
+
+.menu_list #search {
+	width: 20%
+}
+.menu_list li {
+	/*margin-left: 1px;*/
+	text-align:center;
+	float:left;
+	width:25%;
+	box-sizing: border-box;
+	border-right:1px solid grey;
+	cursor:pointer;
+	letter-spacing: 1.2px;
+}
+
+.menu_list li:hover{
+	background-color: black;
+}
+
+.menu_list .menu_active {
+	background-color: black;
+}
+
+.search_input {
+	background-color: inherit;
+	color: inherit;
+	/*height: 49px;*/
+	padding: 10px;
+	border: 0;
+}
+
+.search_input:focus {
+	border: 0;
+}
+
+/*footer*/
+#playPanel {
+	position: fixed;
+	height: 70px;
+	width: 100%;
+	left: 0;
+	overflow: hidden;
+	background-color: black;
+	bottom: 0;
+	color: #fff;
+}
+
+#leftPanel {
+	width: 200px;
+	height: 100%;
+	float: left;
+}
+
+#rightPanel {
+	overflow: hidden;
+	width: 350px;
+	height: 100%;
+	float: right;
+}
+
+#mainPanel {
+	height: 100%;
+	overflow: hidden;
+	color: #fff;
+	position: relative;
+}
+
+/*左侧控制按钮*/
+.play_btn {
+	height: 45px;
+	margin: 20px 20px;
+	list-style: none;
+	padding: 0;
+}
+
+.play_btn li {
+	list-style: none;
+	padding: 0;
+	float: left;
+	margin: 0;
+}
+
+.play_btn .play, .play_btn .stop {
+	margin: 0px 25px;
+}
+
+
+.ctrl_btn {
+	position: relative;
+	padding: 0;
+	text-decoration: none !important;
+	cursor: pointer;
+	text-align: center;
+	overflow: hidden;
+	border: none;
+	outline: none;
+}
+
+.icon-step-backward, .icon-step-forward {
+	color: #fff;
+	font-size: 30px;
+}
+
+.icon-pause {
+	color: #fff;
+	font-size: 33px;
+}
+
+.ctrl_btn i:hover {
+	color: grey;
+}
+
+.prev a, .next a {
+	width: 35px;
+	height: 40px;
+	float: left;
+}
+
+/*右侧控制按钮*/
+/*播放模式*/
+.right_panel .play_mode {
+	margin-top: 30px;
+	line-height: 20px;
+	height: 20px;
+	float: left;
+}
+
+.play_mode li {
+	float: left;
+	margin: 0 5px;
+}
+
+.play_mode li a {
+	width: 18px;
+	height: 18px;
+}
+
+.play_mode li a i {
+	color: #fff;
+	font-size: 15px;
+}
+
+.play_mode li a i:hover {
+	color: grey;
+}
+
+/*音量调节*/
+.right_panel .volume {
+	margin-top: 30px;
+	line-height: 20px;
+	height: 20px;
+	float: left;
+	margin-left: 25px;
+}
+
+.volume .mute, .volume .muted {
+	float: left;
+	width: 16px;
+	height: 16px;
+	font-size: 15px;
+}
+
+.volume .vol_slider_wrap {
+	width: 75px;
+	margin-left: 28px;
+}
+
+#volSlider {
+	width: 100%;
+	height: 4px;
+	background-color: #fff;
+	border-radius: 2px;
+	margin-top: 6px;
+	position: relative;
+	border: none;
+}
+
+#volSlider .vol_slider_range {
+	background-color: #fff;
+	height: 3px;
+	border-radius: 5px;
+	font-size: 1px;
+	line-height: 3px;
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+#volSlider .vol_slider_handle {
+	position: absolute;
+	left: 0;
+	top: 0;
+	margin: -8px 0 0 -6px;
+	width: 13px;
+	height: 13px;
+	outline: none;
+}
+
+/*小功能*/
+.widget {
+	height: 40px;
+	width: 120px;
+	margin: 30px 0 0 18px;
+	position: relative;
+	float: left;
+}
