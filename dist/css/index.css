@@ -352,3 +352,52 @@ header {
 	z-index: 101;
 	cursor: pointer;
 }
+
+/*主体*/
+.main-wrapper {
+	position: absolute;
+	top: 50px;
+	bottom: 70px;
+	width: 100%;
+	/*height: 100%;*/
+}
+
+.layout-bd {
+	position: absolute;
+	height: 100%;
+	background-color: #fff;
+	width: 200px;
+	border-right: 1px solid #c1c1c1;
+	left: 0;
+}
+
+.leftbar-outer {
+	overflow-y: auto;
+	position: absolute;
+	width: 100%;
+}
+
+.leftbar-outer .list {
+	padding: 5px;
+	height: 40px;
+	position: relative;
+	overflow: hidden;
+	cursor: pointer;
+	border-bottom: 1px solid #c1c1c1;
+}
+
+.leftbar-outer .list-actived {
+	background-color: #c1c1c1;
+}
+
+.list-btn {
+	font-size: 20px;
+}
+
+.list-btn i {
+	margin: 0 25px;
+}
+
+.list-btn .split {
+	padding: 5px;
+}

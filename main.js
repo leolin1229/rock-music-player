@@ -8,7 +8,7 @@
 
 chrome.app.runtime.onLaunched.addListener(function(data) {
     chrome.app.window.create('index.html', 
-    	{bounds: {width:1150, height:650}, minWidth:1150, minHeight:600,  id:"EMP"}, 
+    	{bounds: {width:1050, height:650}, minWidth:1050, minHeight:600,  id:"EMP"}, 
     	function(app_win) {
     		app_win.contentWindow.__EMP__bRestart = false;
     	}
@@ -18,7 +18,7 @@ chrome.app.runtime.onLaunched.addListener(function(data) {
 
 chrome.app.runtime.onRestarted.addListener(function() {
     chrome.app.window.create('index.html', 
-    	{bounds: {width:1150, height:650}, minWidth:1150, minHeight:600, id:"EMP"}, 
+    	{bounds: {width:1050, height:650}, minWidth:1050, minHeight:600, id:"EMP"}, 
     	function(app_win) {
     		app_win.contentWindow.__EMP__bRestart = true;
     	}
