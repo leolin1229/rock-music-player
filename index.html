@@ -14,7 +14,7 @@
 	<section id="menu">
 		<ul class="menu-list">
 			<li id="openFile"><i class="icon-circle-plus"></i></li>
-			<li id="local" class="menu-active"><i class="icon-file"></i>&nbsp&nbsp本地音乐</li>
+			<li id="local"><i class="icon-file"></i>&nbsp&nbsp本地音乐</li>
 			<li id="online"><i class="icon-cloud"></i>&nbsp&nbsp在线音乐</li>
 			<li id="search">
 				<input type="text" placeholder="请输入歌名、歌手..." class="search-input">
@@ -27,30 +27,111 @@
 
 	<!-- 内容 -->
 	<div class="main-wrapper">
-<!-- 		<section id="localBody">
+		<section id="localBody">
 			<div class="column1 layout-bd" id="leftCol1">
 				<div class="leftbar-outer">
-					<div class="list list-actived">
+					<div class="list list-actived" id="songList">
 						<a class="list-btn" hidefocus="true"><i class="icon-list"><span class="split"></span>歌曲列表</i></a>
 					</div>
-					<div class="list">
+					<div class="list" id="singerList">
 						<a class="list-btn" hidefocus="true"><i class="icon-user"><span class="split"></span>歌手列表</i></a>
 					</div>
-					<div class="list">
+<!-- 					<div class="list" id="albumList">
 						<a class="list-btn" hidefocus="true"><i class="icon-albums"><span class="split"></span>专辑列表</i></a>
-					</div>
-					<div class="list">
+					</div> -->
+					<div class="list" id="likeList">
 						<a class="list-btn" hidefocus="true"><i class="icon-heart"><span class="split"></span>我喜欢的</i></a>
 					</div>
-					<div class="list">
+					<div class="list" id="recycleList">
 						<a class="list-btn" hidefocus="true"><i class="icon-bin"><span class="split"></span>回收站</i></a>
 					</div>
-					<div class="list">
+					<div class="list" id="offlineList">
 						<a class="list-btn" hidefocus="true"><i class="icon-cloud-download"><span class="split"></span>离线音乐</i></a>
 					</div>
 				</div>
 			</div>
-		</section> -->
+			<div class="tab-content column2">
+				<!-- 歌曲列表 -->
+				<div id="leftCol2-songList">
+					<div class="list-header">
+						<div class="list-header-column c0">
+							<span class="item">歌曲</span>
+						</div>
+						<div class="list-header-column c1">
+							<span class="item">歌手</span>
+						</div>
+						<div class="list-header-column c2">
+							<span class="item">专辑</span>
+						</div>
+					</div>
+
+
+<!-- 
+					<div class="tips"> 
+						<span>添加几首歌吧！</span>
+					</div>
+					 -->
+
+
+					 <div class="list-viewport">
+					 	<div class="list-row even">
+					 		<div class="list-cell c0">
+					 			<span class="list-songname">一生中最爱</span>
+					 		</div>
+					 		<div class="list-cell c1">
+					 			<span class="list-songname">谭咏麟</span>
+					 		</div>
+					 		<div class="list-cell c2">
+					 			<span class="list-songname">《一生中最爱》</span>
+					 		</div>
+					 	</div>
+
+					 	<div class="list-row odd">
+					 		<div class="list-cell c0">
+					 			<span class="list-songname">你把我灌醉</span>
+					 		</div>
+					 		<div class="list-cell c1">
+					 			<span class="list-songname">陈小春</span>
+					 		</div>
+					 		<div class="list-cell c2">
+					 			<span class="list-songname">《绝对收藏》</span>
+					 		</div>
+					 	</div>
+					 </div>
+				</div>
+
+				<!-- 歌手列表 -->
+				<div id="leftCol2-singerList">
+					<div class="singer-list-wrapper">
+						<div class="singer-list">
+							<div class="singer-list-row">
+								<div class="singername"><span>谭咏麟</span></div>
+							</div>
+						</div>
+					</div>
+					<div class="singer-song-wrapper">
+						<div class="list-header">
+							<div class="list-header-column c0">
+								<span class="item">歌曲</span>
+							</div>
+							<div class="list-header-column c1">
+								<span class="item">专辑</span>
+							</div>
+						</div>
+						<div class="list-viewport">
+							<div class="list-row even">
+					 			<div class="list-cell c0">
+					 				<span class="list-songname">一生中最爱</span>
+					 			</div>
+					 			<div class="list-cell c1">
+					 				<span class="list-songname">《一生中最爱》</span>
+					 			</div>
+					 		</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
 
 		<section id="onlineBody">
 			<div class="column2 layout-bd" id="leftCol2">
@@ -140,12 +221,12 @@
 					<div class="time" id="timeWrap">
 						<span class="current-time">00:00</span>
 						<span class="split">/</span>
-						<span class="total-time">10:00</span>
+						<span class="total-time">00:00</span>
 					</div>
 					<div class="progress-wrapper">
 						<div id="progressSlider">
 							<!-- 时间条当前位置 -->
-							<div class="slider-range" style="width: 10%;"></div>
+							<div class="slider-range"></div>
 							<!-- 时间条背景 -->
 							<div class="slider-bar" style="width: 100%;"></div>
 							<!-- 时间点 -->
@@ -157,8 +238,8 @@
 		</div>
 	</section>
     <script type="text/javascript" src="dist/js/jquery-2.1.0.js"></script>
-    <!--
-    <script type="text/javascript" src="dist/js/bootstrap.js"></script>
-	-->
+    
+    <script type="text/javascript" src="dist/js/index.js"></script>
+	
 </body>
 </html>

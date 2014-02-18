@@ -1,5 +1,21 @@
 @charset "utf-8";
 /* reset */
+/*滚动条*/
+::-webkit-scrollbar {
+	width: 8px;
+	height: 14px;
+}
+
+::-webkit-scrollbar-thumb {
+	border-width: 0;
+	border-style: solid;
+	border-radius: 6px;
+	background-color: #d9d9d9;
+}
+
+::-webkit-scrollbar-button {
+	display: none;
+}
 body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, form, fieldset, input, textarea, p, blockquote, th, td {
 	margin: 0;
 	padding: 0;
@@ -227,7 +243,7 @@ header {
 #volSlider {
 	width: 100%;
 	height: 4px;
-	background-color: #fff;
+	background-color: grey;
 	border-radius: 2px;
 	margin-top: 6px;
 	position: relative;
@@ -235,7 +251,7 @@ header {
 }
 
 #volSlider .vol-slider-range {
-	background-color: #fff;
+	background-color: blue;
 	height: 3px;
 	border-radius: 5px;
 	font-size: 1px;
@@ -366,7 +382,7 @@ header {
 	position: absolute;
 	height: 100%;
 	background-color: #fff;
-	width: 200px;
+	width: 17.9%;
 	border-right: 1px solid #c1c1c1;
 	left: 0;
 }
@@ -400,4 +416,125 @@ header {
 
 .list-btn .split {
 	padding: 5px;
+}
+
+/*右边主体*/
+.tab-content {
+	position: absolute;
+	width: 82%;
+	height: 100%;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	overflow: hidden;
+}
+
+.list-header {
+	width: 100%;
+	height: 30px;
+	background-color: #696969;
+	font-weight: bold;
+	font-size: 12px;
+	color: #fff;
+	border-bottom: 1px solid #dad8d8;
+	z-index: 3;
+	overflow: 3;
+	line-height: 30px;
+	position: relative;
+}
+
+.list-header-column {
+	padding: 0 15px;
+	top: 0;
+	white-space: nowrap;
+	overflow: hidden;
+	border-left: 1px solid #dad8d8;
+	float: left;
+}
+
+.c0 {
+	width: 40%;
+}
+
+.c1 {
+	width: 20%;
+}
+
+.c2 {
+	width: 20%;
+}
+
+.tips {
+	font-size: 15px;
+	margin-left: 15px;
+}
+
+/*歌曲列表每一行*/
+.list-viewport {
+	width: 100%;
+	height: 100%;
+	position: relative;
+}
+
+.list-row {
+	height: 50px;
+	width: 100%;
+	line-height: 50px;
+	border-bottom: 1px solid #fff;
+	font-size: 15px;
+	cursor: pointer;
+}
+
+/*鼠标悬浮每一行*/
+.list-row:hover {
+	/*background-color: #000;*/
+}
+
+.list-cell {
+	padding: 0 15px;
+	top: 0;
+	white-space: nowrap;
+	overflow: hidden;
+	float: left;
+}
+
+.odd {
+	background-color: #fff;
+}
+
+/*歌手列表*/
+#leftCol2-singerList {
+	width: 100%;
+}
+
+.singer-list-wrapper {
+	position: absolute;
+	left: 0;
+	width: 24.9%;
+	height: 100%;
+	border-right: 1px solid #c1c1c1;
+	overflow: auto;
+}
+
+.singer-song-wrapper {
+	position: absolute;
+	width: 75%;
+	height: 100%;
+	right: 0;
+	overflow: auto;
+}
+
+.singer-list-row {
+	height: 50px;
+	width: 100%;
+	line-height: 50px;
+	border-bottom: 1px solid #fff;
+	font-size: 15px;
+	cursor: pointer;
+}
+
+.singername {
+	padding: 0 15px;
+	white-space: nowrap;
+	overflow: hidden;
 }
