@@ -73,7 +73,7 @@
 					 -->
 
 
-					 <div class="list-viewport">
+					 <div class="list-viewport" id="GalleryList">
 					 	<div class="list-row even">
 					 		<div class="list-cell c0">
 					 			<span class="list-songname">一生中最爱</span>
@@ -237,6 +237,22 @@
 			</div>
 		</div>
 	</section>
+
+	<!-- 半透明遮蔽层 -->
+	<div class="shade"></div>
+	<!-- 打开文件弹出层 -->
+	<div id="openFileLayer" class="layer">
+		<div class="layer-body">
+			<div class="layer-body-title"><span>你将扫描一下文件夹</span></div>
+			<div class="layer-body-content"></div>
+			<div class="layer-body-footer">
+				<a class="add-btn" id="addBtn" hidefocus="true">添加扫描目录</a>
+				<a class="scan-btn" id="scanBtn" hidefocus="true">开始扫描</a>
+				<a class="cancel-btn" id="cancelBtn" hidefocus="true">取消</a>
+			</div>
+		</div>
+		<div class="layer-border"></div>
+	</div>
     <script type="text/javascript" src="dist/js/jquery-2.1.0.js"></script>
     
     <script type="text/javascript" src="dist/js/index.js"></script>
