@@ -1,15 +1,15 @@
 $(document).ready(function() {
 	// 全局变量
-	var musicIndex = 0;
-	var musicReader = null;
-	var musicDirectories = [];
-	var musicArray = [];
-	var musicData = [];
+	var mGalleryIndex = 0;
+	var mGalleryReader = null;
+	var mGalleryDirectories = [];
+	var mGalleryArray = [];
+	var mGalleryData = [];
 	var curOptGrp = null;
 	var audFormats = ['wav', 'mp3'];
 
 	// 打印错误信息
-	function errorPrintFactory(custom) {
+	function errorHandler(custom) {
 		return function(e) {
 			var msg = "";
 
@@ -37,7 +37,7 @@ $(document).ready(function() {
 		};
 	}
 
-	function MusicData(id) {
+	function SongData(id) {
 		this._id = id;
 		this.path = "";
 		this.sizeBytes = 0;
@@ -51,53 +51,78 @@ $(document).ready(function() {
 
 	function getFileType(filename) {
 		var ext = filename.substr(filename.lastIndexOf('.') + 1).toLowerCase();
-		if(audFormats.index(ext) >= 0) {
+		if(audFormats.indexOf(ext) >= 0) {
 			return 'audio';
 		}else {
 			return null;
 		}
 	}
-	function addMusic(name, id) {
+	function addSong(name, id) {
    		var optGrp = document.createElement("optgroup");
    		optGrp.setAttribute("label",name);
    		optGrp.setAttribute("id", id);
    		document.getElementById("GalleryList").appendChild(optGrp);
    		return optGrp;
 	}
-	function addItem(itemEntry) {
-		var opt = document.createElement("option");
-   		if (itemEntry.isFile) {
-      		opt.setAttribute("data-fullpath", itemEntry.fullPath);
 
-      		var mData = chrome.mediaGalleries.getMediaFileSystemMetadata(itemEntry.filesystem);
-      		opt.setAttribute("data-fsid", mData.galleryId);
+	function addItem(itemEntry) {
+		if(getFileType(itemEntry.name) != 'audio') {
+			return ;
+		}
+
+		var parentDiv = $("<div></div>");
+		parentDiv.addClass('list-row');
+		if(mGalleryIndex % 2) {
+			parentDiv.addClass('odd');
+		}else {
+			parentDiv.addClass('even');
+		}
+		parentDiv.attr('data-fullpath', itemEntry.fullPath);
+   		if (itemEntry.isFile) {
+   			// 1
+   			var childDiv0 = $("<div></div>");
+   			childDiv0.addClass('list-cell c0');
+   			childDiv0.append('<span class="list-songname">' + itemEntry.name + '</span>');
+   			parentDiv.append(childDiv0);
+   			// 2
+   			var childDiv1 = $("<div></div>");
+   			childDiv1.addClass('list-cell c1');
+   			childDiv1.append('<span class="list-songname">' + itemEntry.name + '</span>');
+   			parentDiv.append(childDiv1);
+   			// 3
+   			var childDiv2 = $("<div></div>");
+   			childDiv2.addClass('list-cell c2');
+   			childDiv2.append('<span class="list-songname">' + itemEntry.name + '</span>');
+   			parentDiv.append(childDiv2);
    		}
-   		opt.appendChild(document.createTextNode(itemEntry.name));
-   		curOptGrp.appendChild(opt);
+   		// div.appendChild(document.createTextNode(itemEntry.name));
+   		// curOptGrp.appendChild(div);
+   		$("#GalleryList").append(parentDiv);
 	}
 
-	function scanMusics(fs) {
+	function scanSongs(fs) {
 		var mData = chrome.mediaGalleries.getMediaFileSystemMetadata(fs);
 
-		console.log('Reading directory' + mData.name);
-		curOptGrp = addMusic(mData.name, mData.gallaryId);
-		musicData[musicIndex] = new MusicData(mData.gallaryId);
-		musicReader = fs.root.createReader();
-		musicReader.readEntries(scanMusic, errorPrintFactory('readEntries'));
+		console.log('Reading directory: ' + mData.name);
+		curOptGrp = addSong(mData.name, mData.galleryId);
+		mGalleryData[mGalleryIndex] = new SongData(mData.galleryId);
+		mGalleryReader = fs.root.createReader();
+		mGalleryReader.readEntries(scanSong, errorHandler('readEntries'));
 	}
 
-	function scanMusic(entries) {
+	function scanSong(entries) {
 		if(entries.length == 0) {
-			if(musicDirectories.length > 0) {
-				var dir_entry = musicDirectories.shift();
-				console.log('Doing subdir: ' + dir_entry.fullpath);
-				musicReader = dir_entry.createReader();
-				musicReader.readEntries(scanMusic, errorPrintFactory('readEntries'));
+			if(mGalleryDirectories.length > 0) {
+				var dir_entry = mGalleryDirectories.shift();
+				console.log('Doing subdir: ' + dir_entry.fullPath);
+				mGalleryReader = dir_entry.createReader();
+				// 当前目录下还有目录则递归扫描
+				mGalleryReader.readEntries(scanSong, errorHandler('readEntries'));
 			}else {
-				musicIndex++;
-				if(musicIndex < musicArray.length) {
-					console.log('Doing next Music: ' + musicArray[musicIndex].name);
-					scanMusics(musicArray[musicIndex]);
+				mGalleryIndex++;
+				if(mGalleryIndex < mGalleryArray.length) {
+					console.log('Doing next Music: ' + mGalleryArray[mGalleryIndex].name);
+					scanSongs(mGalleryArray[mGalleryIndex]);
 				}
 			}
 			return ;
@@ -107,20 +132,20 @@ $(document).ready(function() {
 
 			if(entries[i].isFile) {
 				addItem(entries[i]);
-				musicData[musicIndex].numFiles++;
+				mGalleryData[mGalleryIndex].numFiles++;
 				(function(mData) {
 					entries[i].getMetadata(function(metadata) {
 						mData.sizeBytes += metadata.size;
 					});
-				}(musicData[musicIndex]));
+				}(mGalleryData[mGalleryIndex]));
 			}else if(entries[i].isDirectory) {
-				musicDirectories.push(entries[i]);
+				mGalleryDirectories.push(entries[i]);
 			}else {
 				console.log("Got something other than a file or directory.");
 			}
 		}
 
-		musicReader.readEntries(scanMusic, errorPrintFactory('readMoreEntries'));
+		mGalleryReader.readEntries(scanSong, errorHandler('readMoreEntries'));
 	}
 
 	///////////////////////////// app初始化 /////////////////////////////
@@ -148,7 +173,6 @@ $(document).ready(function() {
 
 	// 本地音乐细分标签切换
 	$(".leftbar-outer > div").click(function(event) {
-
 		$(this).addClass('list-actived').siblings().removeClass('list-actived');
 		var tabID = $(this).attr('id');
 		$("#leftCol2-"+tabID).show().siblings().hide();
@@ -175,35 +199,32 @@ $(document).ready(function() {
 				}
 				str += "</span>";
 			});	
-			musicArray = results;
-			musicIndex = 0;
+			mGalleryArray = results;
+			mGalleryIndex = 0;
 
 			$(".layer-body-content").html(str);
 			$(".scan-btn").click(function(event) {
 			 	return false;
 			});
 		}else {
-			var str = "<span>添加扫描目录吧～</span>";
+			var str = "<span>没有任何音频文件哦～</span>";
 			$(".layer-body-content").html(str);
 		}
 	}
 
 	$("#addBtn").click(function(event) {
-		
 		chrome.mediaGalleries.getMediaFileSystems({
 			interactive: "yes"
 		}, getMusicInfo);
 	});
 
 	$("#scanBtn").click(function(event) {
-		// console.log(chrome.mediaGalleries);
-		if(musicArray.length > 0) {
-			scanMusics(musicArray[0]);
+		if(mGalleryArray.length > 0) {
+			scanSongs(mGalleryArray[0]);
 		}
 	});
 
 	$("#cancelBtn").click(function(event) {
-		
 		$(".shade").hide();
 		$(".layer").hide();
 	});
