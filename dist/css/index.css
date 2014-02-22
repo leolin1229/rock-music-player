@@ -637,3 +637,26 @@ header {
 	border: 1px solid #888;
 	color: #cc0000;
 }
+
+.scanTipsWrapper {
+	position: fixed;
+	z-index: 100001;
+	width: 500px;
+	height: 60px;
+	bottom: 75px;
+	left: 50%;
+	margin-left: -250px;
+	border-radius: 3px;
+	background-color: #000;
+	opacity: 0.5;
+	color: #fff;
+}
+
+.scanTips {
+	color: #fff;
+	margin: 15px 10px;
+}
+
+.songname-tips {
+	font-size: 15px;
+}
