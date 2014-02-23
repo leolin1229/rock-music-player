@@ -638,7 +638,7 @@ header {
 	color: #cc0000;
 }
 
-.scanTipsWrapper {
+.scanTipsLayer {
 	position: fixed;
 	z-index: 100001;
 	width: 500px;
@@ -659,4 +659,24 @@ header {
 
 .songname-tips {
 	font-size: 15px;
+}
+
+.percent-bar {
+	width: 480px;
+	height: 5px;
+	background-color: #fff;
+	border-radius: 2px;
+	margin: 0px 10px;
+	border: none;
+	position: relative;
+}
+
+.percent {
+	background-color: red;
+	height: 4px;
+	border-radius: 2px;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 0%;
 }

@@ -1,58 +1,121 @@
 $(document).ready(function() {
 	"use strict";
-	var mp3 = {
+
+	// Mp3类
+	var Mp3 = {
 		// 计算Tag大小
 		'getTagSize': function(str) {
 			if(typeof str === 'string' && str.length === 4) {
             	var total = (str.charCodeAt(0)&0x7f)*0x200000 
-                	      + (str.charCodeAt(1)&0x7f)*0x400
-                    	  + (str.charCodeAt(2)&0x7f)*0x80
-                    	  + (str.charCodeAt(3)&0x7f);
+                	      	+ (str.charCodeAt(1)&0x7f)*0x400
+                    	  	+ (str.charCodeAt(2)&0x7f)*0x80
+                    	  	+ (str.charCodeAt(3)&0x7f);
                 return total;
         	} else {
         		throw Error('参数错误!');
         	}
 		},
-		// 计算帧大小
-		'getFrameSize': function(str) {
-			if(typeof str === 'string' && str.length === 4) {
-            	var total = str.charCodeAt(0)*0x100000000
-            	+ str.charCodeAt(1)*0x10000
-            	+ str.charCodeAt(2)*0x100
-            	+ str.charCodeAt(3);
-            	return total;
+
+    	'getMp3Info': function(result) {
+    		// 获取专辑图片
+    		var getApic = function(str) {
+    			// 专辑信息位置
+    			var index = str.indexOf('APIC');
+
+    			if(index < 0) {
+    				console.log('找不到专辑图片');
+    				return false;
+    			}
+        		// 图片信息大小
+        		var picsize = getFrameSize(str.substr(index+4, 4)),
+        		// 图片信息块1
+        			pic1 = str.substr(index+10 , picsize),
+        		// 图片信息块2
+        			pic2 = pic1.slice(pic1.indexOf('\xff\xd8'));
+
+        		var src = '';
+        		if(typeof pic2 === 'string') {
+        			src = 'data:image/jpeg;base64,' + btoa(pic2);
+        		}
+        		return src;
+        	};
+        	var getAuthor = function(str) {
+        		var index = str.indexOf('TPE1');
+
+        		if(index < 0) {
+        			console.log("找不到作者信息");
+        			return false;
+        		}
+        		// size
+        		var size = getFrameSize(str.substr(index+4, 4)),
+        			author = str.substr(index+10, size);
+
+        		if(typeof author === 'string') {
+        			return author;
+        		}
+        		return '';
+        	};
+        	var getTitle = function(str) {
+
+        	};
+        	var getAlbum = function(str) {
+        		var index = str.indexOf('TALB');
+
+        		if(index < 0) {
+        			console.log('找不到专辑信息');
+        			return false;
+        		}
+
+        		// size
+        		var size = getFrameSize(str.substr(index+4, 4)),
+        			album = str.substr(index+10, size);
+        		console.log(index+" "+size);
+        		console.log(album);
+        		if(typeof author === 'string') {
+        			return author;
+        		}
+        		return '';
+        	};
+
+        	// 计算帧大小
+        	var getFrameSize = function(str) {
+        		if(typeof str === 'string' && str.length === 4) {
+            		var total = str.charCodeAt(0)*0x100000000
+            				+ str.charCodeAt(1)*0x10000
+            				+ str.charCodeAt(2)*0x100
+            				+ str.charCodeAt(3);
+            		return total;
         
-        	} else {
-            	throw Error('参数错误！');
-        	}
-		},
-		// 帧列表
-    	'Frames': {
-        	'TPE1' :'作者',
-        	'TIT2' :'标题',
-        	'TYER' :'年代',
-        	'APIC' :'专辑图片',
-        	'TALB' :'专辑'
+        		} else {
+            		console.log('参数错误！');
+        		}
+        	};
+        	var insertImg = function(a) {
+    			var img = new Image();
+    				img.src = 'data:image/jpeg;base64,' + a;
+    				// img.className = 'img';
+    			this.info.apic = img.src;
+  				/*TODO 父节点插入img*/
+    		};
+    		var info = {
+    			'author' :'作者',
+    			'title' :'标题',
+    			'apic' :'专辑图片',
+    			'album' :'专辑'
+    		};
+    		if(result.slice(0, 3) == 'ID3')  {
+    			// this.info.apic = getApic(result);
+    			// info.author = getAuthor(result);
+    			// this.info.title = getTitle(result);
+    			info.album = getAlbum(result);
+    			return info;
+    		}else {
+    			console.log('找不到ID3信息！');
+    			return null;
+    		}
     	},
-    	// 获取专辑图片
-    	'getAlbumPic': function(result) {
-    		// 专辑信息位置
-        	var index = result.indexOf('APIC');
-        
-        	if(index < 0) {
-        	    alert('找不到专辑图片');
-        	    return false;
-        	}
-        	// 图片信息大小
-        	var picsize = getFrameSize(result.substr(index+4, 4)),
-        	// 图片信息块1
-            pic1 = result.substr(index+10 , picsize),
-        	// 图片信息块2
-            pic2 = pic1.slice(pic1.indexOf('\xff\xd8'));
-            
-        	return pic2;
-    	}
 	};
+
 	// 全局变量
 	var mGalleryIndex = 0;
 	var mGalleryReader = null;
@@ -135,17 +198,17 @@ $(document).ready(function() {
 		}
 		parentDiv.attr('data-fullpath', itemEntry.fullPath);
    		if (itemEntry.isFile) {
-   			// 1
+   			// col1
    			var childDiv0 = $("<div></div>");
    			childDiv0.addClass('list-cell c0');
    			childDiv0.append('<span class="list-songname">' + itemEntry.name + '</span>');
    			parentDiv.append(childDiv0);
-   			// 2
+   			// col2
    			var childDiv1 = $("<div></div>");
    			childDiv1.addClass('list-cell c1');
    			childDiv1.append('<span class="list-songname">' + itemEntry.name + '</span>');
    			parentDiv.append(childDiv1);
-   			// 3
+   			// col3
    			var childDiv2 = $("<div></div>");
    			childDiv2.addClass('list-cell c2');
    			childDiv2.append('<span class="list-songname">' + itemEntry.name + '</span>');
@@ -153,15 +216,6 @@ $(document).ready(function() {
    		}
 
    		$("#GalleryList").append(parentDiv);
-	}
-
-	function addScanTips(path) {
-		$(".scanTips").append("<span class='songname-tips'>" + path + "</span>");
-		$(".scanTipsWrapper").show();
-	}
-
-	function deleteScanTips() {
-		$(".scanTipsWrapper").hide();
 	}
 
 	function scanSongs(DOMFileSystem) {
@@ -175,7 +229,7 @@ $(document).ready(function() {
 		mGalleryReader.readEntries(scanSong, errorHandler('readEntries'));
 	}
 
-	// 递归
+	// 递归扫描
 	function scanSong(entries) {// FileEntry
 		if(entries.length == 0) {
 			if(mGalleryDirectories.length > 0) {
@@ -196,33 +250,45 @@ $(document).ready(function() {
 		for(var i = 0; i < entries.length; i++) {
 
 			if(entries[i].isFile) {
-				// 大小，结束时间
-				entries[i].file(function success(details) {
-					// console.log(details);
-					var blob = details.slice(0, 3, 'MIME');
-					var reader = new FileReader();
-					reader.readAsText(blob);
-					reader.onprogress = function(e) {};//
-					reader.onload = function(e) {
-						console.log(e.target.result);
-					};
-
-					
-				}, errorHandler("fadsf"));
-
-				addItem(entries[i]);
-
 				var mData = chrome.mediaGalleries.getMediaFileSystemMetadata(mGalleryArray[mGalleryIndex]);
 
-				// 添加正在解析某首音乐提示
 				var fullPath = '';
 				if(checkOs() == "MS") {
 					fullPath = mData.name + entries[i].fullPath.replace(/\//g, "\\");
 				}else {
 					fullPath = mData.name + entries[i].fullPath;
 				}
+				////////////////////////////////////////////////////////////
+				entries[i].file(function success(details) {
+					var blob = details.slice(0, details.size, 'MIME');
 
-				addScanTips(fullPath);
+					var reader = new FileReader();
+					reader.onloadstart = function(e) {
+						$(".scanTips").append("<span class='songname-tips'>" + fullPath + "</span>");
+						$(".scanTipsLayer").show();
+					};
+					reader.onprogress = function(e) {
+						if(e.lengthComputable) {
+							var percentLoaded = Math.round((e.loaded / e.total) * 100);
+							var progress = $(".percent");
+							if(percentLoaded <= 100) {
+								progress.css('width', percentLoaded + '%');
+							}
+						}
+					};
+					reader.onloadend = function(e) {
+						var result =  e.target.result;
+						// 获取mp3信息
+						var musicInfo = Mp3.getMp3Info(result);
+						localMusicList.push(musicInfo);
+
+						$(".scanTipsLayer").hide();
+					};
+					reader.readAsBinaryString(blob);
+					////////////////////////////////////////////////////////////
+				}, errorHandler("Reading a file from " + fullPath + " : "));
+
+				addItem(entries[i]);
 
 				// 媒体库信息处理
 				mGalleryData[mGalleryIndex].numFiles++;
@@ -232,10 +298,6 @@ $(document).ready(function() {
 					});
 				}(mGalleryData[mGalleryIndex]));
 
-
-
-				// 删除提示
-				deleteScanTips();
 			}else if(entries[i].isDirectory) {
 				mGalleryDirectories.push(entries[i]);
 			}else {
@@ -274,7 +336,7 @@ $(document).ready(function() {
 		$("#leftCol2-singerList").hide();
 		$(".shade").hide();
 		$(".layer").hide();
-		$(".scanTipsWrapper").hide();
+		$(".scanTipsLayer").hide();
 	}();
 
 	// 本地音乐和在线音乐标签切换
