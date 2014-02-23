@@ -2,12 +2,11 @@
   "manifest_version": 2,
   "name": "Rock Music Player",
   "version": "2",
-  "permissions": [{ "mediaGalleries": ["read", "allAutoDetected"] }],
+  "permissions": [{ "mediaGalleries": ["read", "allAutoDetected"] }, "storage"],
   "app": {
     "background": {
       "scripts": ["main.js"]
     }
   },
   "minimum_chrome_version": "23"
-
 }

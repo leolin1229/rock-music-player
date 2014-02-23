@@ -16,15 +16,47 @@ $(document).ready(function() {
         	}
 		},
 
-    	'getMp3Info': function(result) {
+    	'getMp3Info': function(result, fullPath) {
+    		var frameType = ['TPE1', 'TIT2', 'TALB','APIC'];//作者，标题，专辑名，专辑图片
+
+        	var getAuthor = function(str) {
+        		var index = str.indexOf(frameType[0]);
+
+        		if(index < 0) {
+        			console.log("找不到作者信息");
+        			return '';
+        		}
+
+				return getInfoByString(str, index);
+        	};
+        	var getTitle = function(str) {
+        		var index = str.indexOf(frameType[1]);
+
+        		if(index < 0) {
+        			console.log("找不到标题信息");
+        			return '';
+        		}
+
+				return getInfoByString(str, index);
+        	};
+        	var getAlbum = function(str) {
+        		var index = str.indexOf(frameType[2]);
+
+        		if(index < 0) {
+        			console.log('找不到专辑名信息');
+        			return '';
+        		}
+
+        		return getInfoByString(str, index);
+        	};
     		// 获取专辑图片
     		var getApic = function(str) {
     			// 专辑信息位置
-    			var index = str.indexOf('APIC');
+    			var index = str.indexOf(frameType[3]);
 
     			if(index < 0) {
     				console.log('找不到专辑图片');
-    				return false;
+    				return '';
     			}
         		// 图片信息大小
         		var picsize = getFrameSize(str.substr(index+4, 4)),
@@ -39,44 +71,21 @@ $(document).ready(function() {
         		}
         		return src;
         	};
-        	var getAuthor = function(str) {
-        		var index = str.indexOf('TPE1');
-
-        		if(index < 0) {
-        			console.log("找不到作者信息");
-        			return false;
-        		}
+        	var getInfoByString = function(str, index) {
         		// size
         		var size = getFrameSize(str.substr(index+4, 4)),
-        			author = str.substr(index+10, size);
+        			substr = str.substr(index+13, size-3);
 
-        		if(typeof author === 'string') {
-        			return author;
-        		}
-        		return '';
+        		var ans = '';
+        		for (var i = 0; i < substr.length; i+=2) {
+        			var c1 = substr.charCodeAt(i).toString(16),
+        				c2 = substr.charCodeAt(i+1).toString(16);
+        			c1 = padLeft(c1, '0', 2);
+        			c2 = padLeft(c2, '0', 2);
+        			ans += String.fromCharCode(parseInt(c2+c1, 16).toString(10));
+        		};
+        		return ans;
         	};
-        	var getTitle = function(str) {
-
-        	};
-        	var getAlbum = function(str) {
-        		var index = str.indexOf('TALB');
-
-        		if(index < 0) {
-        			console.log('找不到专辑信息');
-        			return false;
-        		}
-
-        		// size
-        		var size = getFrameSize(str.substr(index+4, 4)),
-        			album = str.substr(index+10, size);
-        		console.log(index+" "+size);
-        		console.log(album);
-        		if(typeof author === 'string') {
-        			return author;
-        		}
-        		return '';
-        	};
-
         	// 计算帧大小
         	var getFrameSize = function(str) {
         		if(typeof str === 'string' && str.length === 4) {
@@ -90,6 +99,12 @@ $(document).ready(function() {
             		console.log('参数错误！');
         		}
         	};
+        	var padLeft = function(str, pad, len) {
+        		while(str.length < len) {
+        			str = pad + str;
+        		}
+        		return str;
+        	};
         	var insertImg = function(a) {
     			var img = new Image();
     				img.src = 'data:image/jpeg;base64,' + a;
@@ -101,13 +116,17 @@ $(document).ready(function() {
     			'author' :'作者',
     			'title' :'标题',
     			'apic' :'专辑图片',
-    			'album' :'专辑'
+    			'album' :'专辑',
+    			'src': 'file://' + fullPath
     		};
     		if(result.slice(0, 3) == 'ID3')  {
-    			// this.info.apic = getApic(result);
-    			// info.author = getAuthor(result);
-    			// this.info.title = getTitle(result);
-    			info.album = getAlbum(result);
+    			info = {
+    				'author': getAuthor(result),
+    				'title': getTitle(result),
+    				'apic': getApic(result),
+    				'album': getAlbum(result),
+    				'src': 'file://' + fullPath
+    			};
     			return info;
     		}else {
     			console.log('找不到ID3信息！');
@@ -126,7 +145,7 @@ $(document).ready(function() {
 	var audFormats = ['wav', 'mp3'];
 	var localMusicList = [];
 	var onlineMusicList = [];
-
+	var localMusicIndex = 0;
 	// 打印错误信息
 	function errorHandler(custom) {
 		return function(e) {
@@ -184,36 +203,32 @@ $(document).ready(function() {
    		return optGrp;
 	}
 
-	function addItem(itemEntry) {
-		if(getFileType(itemEntry.name) != 'audio') {
-			return ;
-		}
+	function addItem(item) {
+		if(!item)return ;
 
 		var parentDiv = $("<div></div>");
 		parentDiv.addClass('list-row');
-		if(mGalleryIndex % 2) {
+		if(localMusicIndex % 2) {
 			parentDiv.addClass('odd');
 		}else {
 			parentDiv.addClass('even');
 		}
-		parentDiv.attr('data-fullpath', itemEntry.fullPath);
-   		if (itemEntry.isFile) {
+		parentDiv.attr('data-src', item.src);
    			// col1
-   			var childDiv0 = $("<div></div>");
-   			childDiv0.addClass('list-cell c0');
-   			childDiv0.append('<span class="list-songname">' + itemEntry.name + '</span>');
-   			parentDiv.append(childDiv0);
+   		var childDiv0 = $("<div></div>");
+   		childDiv0.addClass('list-cell c0');
+   		childDiv0.append('<span class="list-songname">' + item.title + '</span>');
+   		parentDiv.append(childDiv0);
    			// col2
-   			var childDiv1 = $("<div></div>");
-   			childDiv1.addClass('list-cell c1');
-   			childDiv1.append('<span class="list-songname">' + itemEntry.name + '</span>');
-   			parentDiv.append(childDiv1);
+   		var childDiv1 = $("<div></div>");
+   		childDiv1.addClass('list-cell c1');
+   		childDiv1.append('<span class="list-songname">' + item.author + '</span>');
+   		parentDiv.append(childDiv1);
    			// col3
-   			var childDiv2 = $("<div></div>");
-   			childDiv2.addClass('list-cell c2');
-   			childDiv2.append('<span class="list-songname">' + itemEntry.name + '</span>');
-   			parentDiv.append(childDiv2);
-   		}
+   		var childDiv2 = $("<div></div>");
+   		childDiv2.addClass('list-cell c2');
+   		childDiv2.append('<span class="list-songname">' + item.album + '</span>');
+   		parentDiv.append(childDiv2);
 
    		$("#GalleryList").append(parentDiv);
 	}
@@ -279,16 +294,16 @@ $(document).ready(function() {
 					reader.onloadend = function(e) {
 						var result =  e.target.result;
 						// 获取mp3信息
-						var musicInfo = Mp3.getMp3Info(result);
+						var musicInfo = Mp3.getMp3Info(result, fullPath);
 						localMusicList.push(musicInfo);
-
+						// C(fullPath);
+						addItem(musicInfo);
+						localMusicIndex++;
 						$(".scanTipsLayer").hide();
 					};
 					reader.readAsBinaryString(blob);
 					////////////////////////////////////////////////////////////
 				}, errorHandler("Reading a file from " + fullPath + " : "));
-
-				addItem(entries[i]);
 
 				// 媒体库信息处理
 				mGalleryData[mGalleryIndex].numFiles++;
@@ -406,7 +421,18 @@ $(document).ready(function() {
 		$(".layer").hide();
 	});
 
-	// chrome.mediaGalleries.onScanProgress.addListener(function callback(details) {
-	// 	console.log(details);
-	// });
+	$("div").on('dblclick', '.list-row',function(event) {
+		event.preventDefault();
+		var src = $(this).attr('data-src');
+		$("#audioWrapper").attr('src', src);
+		C(src);
+	});
+
+
+
+
+	// debug
+	function C(str) {
+		console.log(str);
+	}
 });
