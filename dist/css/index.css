@@ -159,7 +159,7 @@ header {
 	margin: 0;
 }
 
-.play-btn .play, .play-btn .stop {
+.play-btn .play-pause {
 	margin: -6px 25px;
 }
 
@@ -180,7 +180,7 @@ header {
 	font-size: 30px;
 }
 
-.icon-pause {
+.icon-pause, .icon-play{
 	color: #fff;
 	font-size: 40px;
 }
