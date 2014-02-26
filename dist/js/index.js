@@ -16,7 +16,7 @@ $(document).ready(function() {
         	}
 		},
 
-    	'getMp3Info': function(result, fullPath) {
+    	'getMp3Info': function(result, src) {
     		var frameType = ['TPE1', 'TIT2', 'TALB','APIC'];//作者，标题，专辑名，专辑图片
 
         	var getAuthor = function(str) {
@@ -110,14 +110,13 @@ $(document).ready(function() {
     				img.src = 'data:image/jpeg;base64,' + a;
     				// img.className = 'img';
     			this.info.apic = img.src;
-  				/*TODO 父节点插入img*/
     		};
     		var info = {
     			'author' :'作者',
     			'title' :'标题',
     			'apic' :'专辑图片',
     			'album' :'专辑',
-    			'src': 'file://' + fullPath
+    			'src': '链接'
     		};
     		if(result.slice(0, 3) == 'ID3')  {
     			info = {
@@ -125,7 +124,7 @@ $(document).ready(function() {
     				'title': getTitle(result),
     				'apic': getApic(result),
     				'album': getAlbum(result),
-    				'src': 'file://' + fullPath
+    				'src': src
     			};
     			return info;
     		}else {
@@ -140,12 +139,10 @@ $(document).ready(function() {
 	var mGalleryReader = null;
 	var mGalleryDirectories = [];
 	var mGalleryArray = [];
-	var mGalleryData = [];
-	var curOptGrp = null;
 	var audFormats = ['wav', 'mp3'];
 	var localMusicList = [];
 	var onlineMusicList = [];
-	var localMusicIndex = 0;
+	var localMusicIndex = 0;// 本地音乐计数
 	// 打印错误信息
 	function errorHandler(custom) {
 		return function(e) {
@@ -173,14 +170,6 @@ $(document).ready(function() {
 			};
 			console.log(custom + ": " + msg);
 		};
-	}
-
-	function SongData(id) {
-		this._id = id;
-		this.path = "";
-		this.sizeBytes = 0;
-		this.numFiles = 0;
-		this.numDirs = 0;
 	}
 
 	function addAudioToContentDiv() {
@@ -236,10 +225,8 @@ $(document).ready(function() {
 	function scanSongs(DOMFileSystem) {
 		var mData = chrome.mediaGalleries.getMediaFileSystemMetadata(DOMFileSystem);// Object
 
-		console.log('Reading directory: ' + mData.name);
+		console.log('正在扫描媒体库: ' + mData.name);
 
-		// curOptGrp = addSong(mData.name, mData.galleryId);
-		mGalleryData[mGalleryIndex] = new SongData(mData.galleryId);// new SongData object
 		mGalleryReader = DOMFileSystem.root.createReader();
 		mGalleryReader.readEntries(scanSong, errorHandler('readEntries'));
 	}
@@ -249,7 +236,7 @@ $(document).ready(function() {
 		if(entries.length == 0) {
 			if(mGalleryDirectories.length > 0) {
 				var dir_entry = mGalleryDirectories.shift();
-				console.log('Doing subdir: ' + dir_entry.fullPath);
+				console.log('扫描子目录: ' + dir_entry.fullPath);
 				mGalleryReader = dir_entry.createReader();
 				// 当前目录下还有目录则递归扫描
 				mGalleryReader.readEntries(scanSong, errorHandler('readEntries'));
@@ -265,21 +252,23 @@ $(document).ready(function() {
 		for(var i = 0; i < entries.length; i++) {
 
 			if(entries[i].isFile) {
+
 				var mData = chrome.mediaGalleries.getMediaFileSystemMetadata(mGalleryArray[mGalleryIndex]);
 
-				var fullPath = '';
-				if(checkOs() == "MS") {
-					fullPath = mData.name + entries[i].fullPath.replace(/\//g, "\\");
-				}else {
-					fullPath = mData.name + entries[i].fullPath;
-				}
+				var src = '';// 音频路径
+				mGalleryArray[mGalleryIndex].root.getFile(entries[i].fullPath, {create: false}, function(fileEntry) {
+					fileEntry.file(function(path) {
+						src = window.webkitURL.createObjectURL(path);
+					});
+				});
+
 				////////////////////////////////////////////////////////////
 				entries[i].file(function success(details) {
 					var blob = details.slice(0, details.size, 'MIME');
 
 					var reader = new FileReader();
 					reader.onloadstart = function(e) {
-						$(".scanTips").append("<span class='songname-tips'>" + fullPath + "</span>");
+						$(".scanTips").append("<span class='songname-tips'>" + details.name + "</span>");
 						$(".scanTipsLayer").show();
 					};
 					reader.onprogress = function(e) {
@@ -294,24 +283,16 @@ $(document).ready(function() {
 					reader.onloadend = function(e) {
 						var result =  e.target.result;
 						// 获取mp3信息
-						var musicInfo = Mp3.getMp3Info(result, fullPath);
+						var musicInfo = Mp3.getMp3Info(result, src);
 						localMusicList.push(musicInfo);
-						// C(fullPath);
+
 						addItem(musicInfo);
+
 						localMusicIndex++;
 						$(".scanTipsLayer").hide();
 					};
 					reader.readAsBinaryString(blob);
-					////////////////////////////////////////////////////////////
-				}, errorHandler("Reading a file from " + fullPath + " : "));
-
-				// 媒体库信息处理
-				mGalleryData[mGalleryIndex].numFiles++;
-				(function(gData) {
-					entries[i].getMetadata(function(metadata) {
-						gData.sizeBytes += metadata.size;
-					});
-				}(mGalleryData[mGalleryIndex]));
+				}, errorHandler("Reading a file: "));
 
 			}else if(entries[i].isDirectory) {
 				mGalleryDirectories.push(entries[i]);
@@ -323,21 +304,7 @@ $(document).ready(function() {
 		mGalleryReader.readEntries(scanSong, errorHandler('readMoreEntries'));
 	}
 
-	function checkOs() {
-		var windows = (navigator.userAgent.indexOf("Windows",0) != -1)?1:0;
-		var mac = (navigator.userAgent.indexOf("mac",0) != -1)?1:0;
-		var linux = (navigator.userAgent.indexOf("Linux",0) != -1)?1:0;
-		var unix = (navigator.userAgent.indexOf("X11",0) != -1)?1:0;
- 		
- 		var os_type = '';
-		if (windows) os_type = "MS";
-		else if (mac) os_type = "Apple";
-		else if (linux) os_type = "Lunix";
-		else if (unix) os_type = "Unix";
- 
-		return os_type;
-	}
-	///////////////////////////// app初始化 /////////////////////////////
+	///////////////////////////// app初始化开始 /////////////////////////////
 	var init = function() {
 		$("#local").addClass('menu-active');
 		$(".vol-slider-range").css({
@@ -370,6 +337,7 @@ $(document).ready(function() {
 
 	// 打开文件点击事件
 	$("#openFile").click(function(event) {
+
 		chrome.mediaGalleries.getMediaFileSystems({
 			interactive: "if_needed"
 		}, getMusicInfo);
@@ -410,6 +378,7 @@ $(document).ready(function() {
 
 	$("#scanBtn").click(function(event) {
 		if(mGalleryArray.length > 0) {
+			// C(mGalleryArray[0]);
 			scanSongs(mGalleryArray[0]);// DOMFileSystem of Array
 		}
 		$(".shade").hide();
