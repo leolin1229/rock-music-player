@@ -163,7 +163,7 @@
 				<!-- 音量调节 -->
 				<div class="volume" id="volumeWrapper">
 					<!-- 音量按钮 -->
-					<a class="mute ctrl-btn muted" hidefocus="true" title="静音"><i class="icon-mute"></i></a>
+					<a class="mute ctrl-btn muted" hidefocus="true" title="静音"><i class="icon-volume-up"></i></a>
 					<div class="vol-slider-wrapper">
 						<div id="volSlider" class="vol-slider progress-bar">
 							<!-- 音量白色条 -->
@@ -199,12 +199,12 @@
 					</div>
 					<div class="progress-wrapper">
 						<div id="progressSlider">
+							<!-- 缓冲条 -->
+							<div class="slider-buffer"></div>
 							<!-- 时间条当前位置 -->
 							<div class="slider-range"></div>
 							<!-- 时间条背景 -->
 							<div class="slider-bar" style="width: 100%;"></div>
-							<!-- 缓冲条 -->
-							<div class="slider-buffer"></div>
 							<!-- 时间点 -->
 							<a class="slider-handle" hidefocus="true"><i class="icon-riflescope"></i></a>
 						</div>
@@ -219,7 +219,7 @@
 	<!-- 打开文件弹出层 -->
 	<div id="openFileLayer" class="layer">
 		<div class="layer-body">
-			<div class="layer-body-title"><span>你将扫描一下文件夹</span></div>
+			<div class="layer-body-title"><span>你将扫描以下文件夹</span></div>
 			<div class="layer-body-content"></div>
 			<div class="layer-body-footer">
 				<a class="add-btn" id="addBtn" hidefocus="true">添加扫描目录</a>

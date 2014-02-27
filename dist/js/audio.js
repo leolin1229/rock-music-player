@@ -1,3 +1,4 @@
+"use strict";
 var audio = {
 	audioEle: null,
 	audioData: null,
@@ -21,6 +22,7 @@ var audio = {
 		_audio.addEventListener('error', this.onError, false);
 		_audio.addEventListener('progress', this.onProgress, false);
 		_audio.addEventListener('timeupdate', this.onTimeUpdate, false);
+		_audio.volume = 0.5;
 		$(".vol-slider-range").css('width', '50%');
 		$(".vol-slider-handle").css('left', parseInt($(".vol-slider-range").width()) + 'px');
 		$(".slider-range").css('width', '0%');
@@ -29,13 +31,12 @@ var audio = {
 		$(".title.artist").text('');
 		return this;
 	},
-	setCurrentTime: function(percent, len) {
-		// console.log(this.audioEle.duration);
-		// console.log(audio.audioEle.currentTime);
-		if(audio.audioEle.duration) {
-			audio.audioEle.currentTime = audio.audioEle.duration * percent;
+	setCurrentTime: function(percent) {
+		if(this.audioEle.duration) {
+			var width = parseInt($(".slider-bar").width());
+			this.audioEle.currentTime = audio.audioEle.duration * percent;
 			$(".slider-range").css('width', percent * 100 + '%');
-			$(".slider-handle").css('left', percent * len + 'px');
+			$(".slider-handle").css('left', percent * width + 'px');
 		}
 	},
 	setSrc: function(src) {
@@ -46,15 +47,28 @@ var audio = {
 		$(".slider-handle").css('width', '0%');
 		$(".icon-play").removeClass('icon-play').addClass('icon-pause');
 	},
+	setVolume: function(vol) {
+		if(this.audioEle.duration) {
+			var width = parseInt($("#volSlider").width());
+			this.audioEle.volume = vol;
+			$(".vol-slider-range").css('width', vol * 100 + '%');
+			$(".vol-slider-handle").css('left', vol * width + 'px');
+			var icon_class = $("#volumeWrapper a i").attr('class');
+			if(vol < 0.01) {
+				$("#volumeWrapper a i").removeClass(icon_class).addClass('icon-mute');
+			}else if(vol < 0.51) {
+				$("#volumeWrapper a i").removeClass(icon_class).addClass('icon-volume-down');
+			}else {
+				$("#volumeWrapper a i").removeClass(icon_class).addClass('icon-volume-up');
+			}
+		}
+	},
 	play: function() {
 		this.audioEle.pause();
 		this.audioEle.play();
 	},
 	pause: function() {
 		this.audioEle.pause();
-	},
-	setVolume: function(val) {
-		this.audioEle.volume = val;
 	},
 	onLoadedMetaData: function() {
 		var _audio = audio.audioEle;
@@ -80,8 +94,11 @@ var audio = {
 		$(".current-time").text(audio.formatTime(cur));
 
 		try {
-			var buf = audioEl.buffered.end(0);
+			var buf = _audio.buffered.end(0);
 			$(".slider-buffer").css('width', buf / dur * 100 + '%');
-		} catch (error) {}
+		} catch (error) {console.log("音频缓冲错误：" + error);}
 	}
+};
+function C(str) {
+	console.log(str);
 }
