@@ -102,6 +102,7 @@ $(document).ready(function() {
 	}
 
 	// 递归扫描
+	var count = 0;
 	function scanSong(entries) {// FileEntry
 		if(entries.length == 0) {
 			if(mGalleryDirectories.length > 0) {
@@ -135,8 +136,8 @@ $(document).ready(function() {
 
 						var reader = new FileReader();
 						reader.onloadstart = function(e) {
-							$(".scanTips").append("<span class='songname-tips'>" + file.name + "</span>");
 							$(".scanTipsLayer").show();
+							$(".scanTips").append("<span class='songname-tips'>" + file.name + "</span>");
 						};
 						reader.onprogress = function(e) {
 							if(e.lengthComputable) {
@@ -148,16 +149,16 @@ $(document).ready(function() {
 							}
 						};
 						reader.onloadend = function(e) {
+							$(".scanTipsLayer").hide();
 							var result =  e.target.result;
-								// 获取mp3信息
-								var musicInfo = Mp3.getMp3Info(result, src);
-								localMusicList.push(musicInfo);
+							// 获取mp3信息
+							var musicInfo = Mp3.getMp3Info(result, src);
+							localMusicList.push(musicInfo);
 
-								addItem(musicInfo);
+							addItem(musicInfo);
 
-								localMusicIndex++;
-								$(".scanTipsLayer").hide();
-							};
+							localMusicIndex++;
+						};
 						reader.readAsBinaryString(blob);
 					});
 				});
@@ -281,20 +282,58 @@ $(document).ready(function() {
 	});
 
 	$(this).on('keydown', function(event) {
-		event.preventDefault();
-		var tt = ".play-btn .play-pause a";
-		if($(".play-btn .play-pause").hasClass('pause')) {
-			$(tt).children().removeClass('icon-pause').addClass('icon-play');
-			$(tt).attr('title', '播放');
-			$(tt).parent().removeClass('pause').addClass('play');
-			myAudio.pause();	
-		}else {
-			$(tt).children().removeClass('icon-play').addClass('icon-pause');
-			$(tt).attr('title', '暂停');
-			$(tt).parent().removeClass('play').addClass('pause');
-			myAudio.play();
+		if(event.keyCode == 32) {
+			event.preventDefault();
+			var tt = ".play-btn .play-pause a";
+			if($(".play-btn .play-pause").hasClass('pause')) {
+				$(tt).children().removeClass('icon-pause').addClass('icon-play');
+				$(tt).attr('title', '播放');
+				$(tt).parent().removeClass('pause').addClass('play');
+				myAudio.pause();	
+			}else {
+				$(tt).children().removeClass('icon-play').addClass('icon-pause');
+				$(tt).attr('title', '暂停');
+				$(tt).parent().removeClass('play').addClass('pause');
+				myAudio.play();
+			}
 		}
 	});
+
+	$("#progressSlider").drag({
+		handler: ".slider-handle",
+		X: true,
+		maxLeft: parseInt($(".slider-bar").offset().left),
+		maxRight: parseInt($(".slider-bar").offset().left) + parseInt($(".slider-bar").width()),
+		callback: function() {
+			var percent = $(".slider-range").css('width') === "0px" ? 0 : parseInt($(".slider-range").css('width')) / parseInt($(".slider-bar").width());
+			myAudio.setCurrentTime(percent, parseInt($(".slider-bar").width()));
+		}
+	});
+
+	$("#progressSlider").on('click', function(event) {
+		event.preventDefault();
+		var left = parseInt($(".slider-bar").offset().left);
+		var width = parseInt($(".slider-bar").width());
+		if(event.pageX < left || event.pageX > left+width) return false;
+		var percent = (event.pageX - left) / (width);
+		myAudio.setCurrentTime(percent, width);
+	});
+	// $(".slider-handle").on('dragstart', function(event) {
+	// 	event.preventDefault();
+	// 	var X = event.pageX - $(".slider-bar").offset().left;
+	// 	C(X);
+	// 	// $(this).css('left', X+'px');
+	// });
+	// $(".slider-handle").on('dragover', function(event) {
+	// 	event.preventDefault();
+	// 	var X = event.pageX - $(".slider-bar").offset().left;
+	// 	C(X);
+	// });
+	// $(".slider-handle").on('drop', function(event) {
+	// 	event.preventDefault();
+	// 	var X = event.pageX - $(".slider-bar").offset().left;
+	// 	C(X);
+	// });
 	// debug
 	function C(str) {
 		console.log(str);

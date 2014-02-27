@@ -12,13 +12,8 @@ var audio = {
 	},
 	createPlayer: function(data) {
 		this.audioEle = new Audio();
-		// console.log(this.audioEle);
 		var _audio = this.audioEle;
-		// _audio.addEventListener('loadstart', this.onLoadStart, false);
-		// _audio.addEventListener('durationchange', this.onDurationChange, false);
 		_audio.addEventListener('loadedmetadata', this.onLoadedMetaData, false);
-		// _audio.addEventListener('loadeddata', this.onLoadedData, false);
-		// _audio.addEventListener('progress', this.onProgress, false);
 		_audio.addEventListener('canplay', this.onCanPlay, false);
 		_audio.addEventListener('play', this.onPlay, false);
 		_audio.addEventListener('pause', this.onPause, false);
@@ -26,14 +21,22 @@ var audio = {
 		_audio.addEventListener('error', this.onError, false);
 		_audio.addEventListener('progress', this.onProgress, false);
 		_audio.addEventListener('timeupdate', this.onTimeUpdate, false);
-		// _audio.addEventListener('canplaythrough', this.onCanplaythrough, false);
 		$(".vol-slider-range").css('width', '50%');
-		$(".vol-slider-handle").css('left', $(".vol-slider-range").width() + 'px');
+		$(".vol-slider-handle").css('left', parseInt($(".vol-slider-range").width()) + 'px');
 		$(".slider-range").css('width', '0%');
-		$(".slider-handle").css('width', '0%');
+		$(".slider-handle").css('left', '0');
 		$(".title.songname").text('');
 		$(".title.artist").text('');
 		return this;
+	},
+	setCurrentTime: function(percent, len) {
+		// console.log(this.audioEle.duration);
+		// console.log(audio.audioEle.currentTime);
+		if(audio.audioEle.duration) {
+			audio.audioEle.currentTime = audio.audioEle.duration * percent;
+			$(".slider-range").css('width', percent * 100 + '%');
+			$(".slider-handle").css('left', percent * len + 'px');
+		}
 	},
 	setSrc: function(src) {
 		this.audioEle.pause();
@@ -73,7 +76,12 @@ var audio = {
 		var cur = _audio.currentTime,
 			dur = _audio.duration;
 		$(".slider-range").css('width', cur / dur * 100 + "%");
-		$(".slider-handle").css('left', cur / dur * $("#progressSlider").width() + "px");
+		$(".slider-handle").css('left', cur / dur * parseInt($("#progressSlider").width()) + "px");
 		$(".current-time").text(audio.formatTime(cur));
+
+		try {
+			var buf = audioEl.buffered.end(0);
+			$(".slider-buffer").css('width', buf / dur * 100 + '%');
+		} catch (error) {}
 	}
 }

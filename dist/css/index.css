@@ -348,8 +348,19 @@ header {
 	font-size: 1px;
 }
 
+#progressSlider .slider-buffer {
+	background-color: red;
+	height: 6px;
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 20;
+	border: none;
+	font-size: 1px;
+}
+
 #progressSlider .slider-bar {
-	background-color: grey;
+	background-color: #fff;
 	border-radius: 5px;
 	height: 7px;
 	position: absolute;
