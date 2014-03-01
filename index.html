@@ -151,13 +151,13 @@
 				<!-- 播放模式 -->
 				<ul class="play-mode" id="playMode">
 					<li class="random-mode">
-						<a hidefocus="true" title="随机播放" class="ctrl-btn"><i class="icon-random"></i></a>
+						<a hidefocus="true" title="随机播放" class="ctrl-btn" data-mode="0"><i class="icon-random"></i></a>
 					</li>
 					<li class="single-mode">
-						<a hidefocus="true" title="单曲播放" class="ctrl-btn"><i class="icon-repeat"></i></a>
+						<a hidefocus="true" title="单曲播放" class="ctrl-btn" data-mode="1"><i class="icon-repeat"></i></a>
 					</li>
 					<li class="list-mode">
-						<a hidefocus="true" title="循环播放" class="ctrl-btn"><i class="icon-retweet"></i></a>
+						<a hidefocus="true" title="列表循环" class="ctrl-btn selected" data-mode="2"><i class="icon-retweet"></i></a>
 					</li>
 				</ul>
 				<!-- 音量调节 -->
@@ -241,6 +241,7 @@
     <script type="text/javascript" src="dist/js/mp3.js"></script>
     <script type="text/javascript" src="dist/js/audio.js"></script>
     <script type="text/javascript" src="dist/js/jquery-drag.js"></script>
+    <script type="text/javascript" src="dist/js/jquery.indexeddb.js"></script>
     <script type="text/javascript" src="dist/js/index.js"></script>
 	
 </body>

@@ -14,15 +14,15 @@ var Mp3 = {
 		}
 	},
 
-	'getMp3Info': function(result, src) {
+	'getMp3Info': function(galleryId, result, fullPath) {
     	var frameType = ['TPE1', 'TIT2', 'TALB','APIC'];//作者，标题，专辑名，专辑图片
 
-    	var getAuthor = function(str) {
+    	var getArtist = function(str) {
     		var index = str.indexOf(frameType[0]);
 
    			if(index < 0) {
     			console.log("找不到作者信息");
-    			return '';
+    			return 'unknown';
     		}
 
     		return getInfoByString(str, index);
@@ -32,7 +32,7 @@ var Mp3 = {
 
     		if(index < 0) {
     			console.log("找不到标题信息");
-    			return '';
+    			return 'unknown';
     		}
 
     		return getInfoByString(str, index);
@@ -42,7 +42,7 @@ var Mp3 = {
 
     		if(index < 0) {
     			console.log('找不到专辑名信息');
-    				return '';
+    				return 'unknown';
     		}
 
     		return getInfoByString(str, index);
@@ -54,7 +54,7 @@ var Mp3 = {
 
     		if(index < 0) {
     			console.log('找不到专辑图片');
-    			return '';
+    			return 'unknown';
     		}
         	// 图片信息大小
         	var picsize = getFrameSize(str.substr(index+4, 4)),
@@ -112,19 +112,21 @@ var Mp3 = {
 
     	// main
     	var info = {
-    		'author' :'作者',
-    		'title' :'标题',
-    		'apic' :'专辑图片',
-    		'album' :'专辑',
-    		'src': '链接'
+    		'artist' :'unknown',
+    		'title' :'unknown',
+    		'apic' :'unknown',
+    		'album' :'unknown',
+    		'fullPath': 'unknown',
+            'galleryId': 0
     	};
     	if(result.slice(0, 3) == 'ID3')  {
     		info = {
-    			'author': getAuthor(result),
+    			'artist': getArtist(result),
     			'title': getTitle(result),
     			'apic': getApic(result),
     			'album': getAlbum(result),
-    			'src': src
+    			'fullPath': fullPath,
+                'galleryId': galleryId
     		};
     		return info;
     	}else {

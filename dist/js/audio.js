@@ -18,11 +18,12 @@ var audio = {
 		_audio.addEventListener('canplay', this.onCanPlay, false);
 		_audio.addEventListener('play', this.onPlay, false);
 		_audio.addEventListener('pause', this.onPause, false);
-		_audio.addEventListener('ended', this.onEnded, false);
+		// _audio.addEventListener('ended', this.onEnded, false);// 为什么无法Ended事件？
 		_audio.addEventListener('error', this.onError, false);
 		_audio.addEventListener('progress', this.onProgress, false);
 		_audio.addEventListener('timeupdate', this.onTimeUpdate, false);
 		_audio.volume = 0.5;
+		
 		$(".vol-slider-range").css('width', '50%');
 		$(".vol-slider-handle").css('left', parseInt($(".vol-slider-range").width()) + 'px');
 		$(".slider-range").css('width', '0%');
@@ -63,6 +64,11 @@ var audio = {
 			}
 		}
 	},
+	getSrc: function() {
+		if(this.audioEle.src)
+		return this.audioEle.src;
+		else return null;
+	},
 	play: function() {
 		this.audioEle.pause();
 		this.audioEle.play();
@@ -70,20 +76,27 @@ var audio = {
 	pause: function() {
 		this.audioEle.pause();
 	},
+	setLoop: function() {
+		this.audioEle.loop = true;
+	},
+	unsetLoop: function() {
+		this.audioEle.loop = false;
+	},
 	onLoadedMetaData: function() {
 		var _audio = audio.audioEle;
+		_audio.loop = false;
 		var duration = audio.formatTime(_audio.duration);
 		$(".total-time").text(duration);
 	},
 	onCanPlay: function() {},
 	onPlay: function() {},
 	onPause: function() {},
-	onEndedHandle: function() {},
 	onEnded: function() {
 		if (typeof audio.onEndedHandle == "function") {
 			audio.onEndedHandle();
 		}
 	},
+	onEndedHandle: function() {},
 	onProgress: function() {},
 	onTimeUpdate: function() {
 		var _audio = audio.audioEle;
@@ -92,11 +105,13 @@ var audio = {
 		$(".slider-range").css('width', cur / dur * 100 + "%");
 		$(".slider-handle").css('left', cur / dur * parseInt($("#progressSlider").width()) + "px");
 		$(".current-time").text(audio.formatTime(cur));
-
 		try {
 			var buf = _audio.buffered.end(0);
 			$(".slider-buffer").css('width', buf / dur * 100 + '%');
 		} catch (error) {console.log("音频缓冲错误：" + error);}
+		if(cur == dur) {
+			audio.onEnded();
+		}
 	}
 };
 function C(str) {
