@@ -51,6 +51,8 @@ var audio = {
 	setVolume: function(vol) {
 		if(this.audioEle.duration) {
 			var width = parseInt($("#volSlider").width());
+			if(vol > 1.0) vol = 1.0;
+			if(vol < 0.0) vol = 0.0;
 			this.audioEle.volume = vol;
 			$(".vol-slider-range").css('width', vol * 100 + '%');
 			$(".vol-slider-handle").css('left', vol * width + 'px');

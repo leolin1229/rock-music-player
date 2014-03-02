@@ -117,7 +117,8 @@ var Mp3 = {
     		'apic' :'unknown',
     		'album' :'unknown',
     		'fullPath': 'unknown',
-            'galleryId': 0
+            'galleryId': 0,
+            'like': false
     	};
     	if(result.slice(0, 3) == 'ID3')  {
     		info = {
@@ -126,7 +127,8 @@ var Mp3 = {
     			'apic': getApic(result),
     			'album': getAlbum(result),
     			'fullPath': fullPath,
-                'galleryId': galleryId
+                'galleryId': galleryId,
+                'like': false
     		};
     		return info;
     	}else {

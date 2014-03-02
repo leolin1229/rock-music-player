@@ -9,6 +9,7 @@ $(document).ready(function() {
 	var audFormats = ['wav', 'mp3'];
 	var localMusic = {
 		array: [],
+		artist: [],
 		currentID: 0,
 		len: 0,
 		playPre: function(mode) {
@@ -63,7 +64,7 @@ $(document).ready(function() {
 			}
 		}
 	};
-	var track = [];
+	var tag = [];
 	var onlineMusicArray = [];
 	var localMusicIndex = 0;// 本地音乐计数
 	var myAudio = audio.createPlayer();
@@ -140,7 +141,11 @@ $(document).ready(function() {
    		childDiv2.addClass('list-cell c2');
    		childDiv2.append('<span class="list-songname">' + item.album + '</span>');
    		parentDiv.append(childDiv2);
-
+   			// 
+   		var childDelete = $("<div></div>");
+		childDelete.addClass('song-delete');
+		childDelete.append('<span class="delete"><i class="icon-remove-2"></i></span>')
+   		parentDiv.append(childDelete);
    		$("#GalleryList").append(parentDiv);
 	}
 
@@ -206,7 +211,11 @@ $(document).ready(function() {
 							var musicInfo = Mp3.getMp3Info(galleryId, result, fullPath);
 							localMusic.array.push(musicInfo);
 							addItem(musicInfo);
-							track.push(musicInfo.galleryId.toString()+","+musicInfo.fullPath.toString());
+							tag.push(musicInfo.galleryId.toString()+","+musicInfo.fullPath.toString());
+							if(localMusic.artist.indexOf(musicInfo.artist) == -1) {
+								localMusic.artist.push(musicInfo.artist.toString());
+								$(".singer-list").append('<div class="singer-list-row"><div class="singername"><span>'+musicInfo.artist.toString()+'</span></div></div>');
+							}
 							$.indexedDB("localMusicDB").objectStore("musicList").add(musicInfo).done(function() {});
 						};
 					});
@@ -226,10 +235,10 @@ $(document).ready(function() {
 	// 从指定媒体库中读取某个文件并【播放】
 	function readFileAsPath(galleryId, fullPath) {
 		if(galleryId && fullPath) {
-			$(".title .songname").text(localMusic.array[localMusic.currentID].title);
 			$(".title .artist").text(localMusic.array[localMusic.currentID].artist);
+			$(".title .songname").text(localMusic.array[localMusic.currentID].title);
 			var gallery = mGalleryArray[galleryId - 1];
-			localMusic.currentID = track.indexOf(galleryId.toString()+","+fullPath.toString());
+			localMusic.currentID = tag.indexOf(galleryId.toString()+","+fullPath.toString());
 			gallery.root.getFile(fullPath, {create: false}, function(fileEntry) {
 				fileEntry.file(function(file) {
 					var src = window.webkitURL.createObjectURL(file);
@@ -241,16 +250,62 @@ $(document).ready(function() {
 			console.error("readFileAsPath Error");
 		}
 	}
+
 	function addItemList(obj) {
 		obj.array = [];
-		track = [];
+		obj.artist = [];
+		tag = [];
 		$.indexedDB("localMusicDB").objectStore("musicList").each(function(item) {
+			if(item.value.galleryId == -1) return true;
+
 			addItem(item.value);
 			obj.array.push(item.value);
-			track.push(item.value.galleryId.toString()+","+item.value.fullPath.toString());
-		}).done(function() {obj.len = obj.array.length;});
+			if(obj.artist.indexOf(item.value.artist.toString()) == -1) {
+				obj.artist.push(item.value.artist.toString());
+			}
+			tag.push(item.value.galleryId.toString()+","+item.value.fullPath.toString());
+		}).done(function() {
+			if(localMusic.artist.length) {
+				localMusic.artist.forEach(function(item, index, arr) {
+					$(".singer-list").append('<div class="singer-list-row"><div class="singername"><span>'+item+'</span></div></div>');
+				});
+			}
+		});
 	}
 
+	function getMusicInfo(results) {
+		if(results.length) {
+			var str = "<span>";
+			results.forEach(function(item, index, arr) {
+				var mData = chrome.mediaGalleries.getMediaFileSystemMetadata(item);
+				if(mData) {
+					str += mData.name;
+					str += "<br>";
+				}
+				str += "</span>";
+			});	
+			mGalleryArray = results;
+			mGalleryIndex = 0;
+
+			$(".layer-body-content").html(str);
+			$(".scan-btn").click(function(event) {
+			 	return false;
+			});
+		}else {
+			var str = "<span>没有任何音频文件夹哦～</span>";
+			$(".layer-body-content").html(str);
+		}
+	}
+	function deleteMusic(galleryId, fullPath) {
+		localMusic.array.forEach(function(item, index, arr) {
+			if(item.galleryId === galleryId && item.fullPath === fullPath) {
+				var tmp = item;
+				tmp.galleryId = "-1";
+				$.indexedDB("localMusicDB").objectStore("musicList").put(tmp, index+1);
+				return false;
+			}
+		});
+	}
 	myAudio.onEndedHandle = function() {
 		var mode = parseInt($(".play-mode li a.selected").attr('data-mode'));
 		switch(mode) {
@@ -331,30 +386,6 @@ $(document).ready(function() {
 		$(".layer").show('slow');
 	});
 
-	function getMusicInfo(results) {
-		if(results.length) {
-			var str = "<span>";
-			results.forEach(function(item, index, arr) {
-				var mData = chrome.mediaGalleries.getMediaFileSystemMetadata(item);
-				if(mData) {
-					str += mData.name;
-					str += "<br>";
-				}
-				str += "</span>";
-			});	
-			mGalleryArray = results;
-			mGalleryIndex = 0;
-
-			$(".layer-body-content").html(str);
-			$(".scan-btn").click(function(event) {
-			 	return false;
-			});
-		}else {
-			var str = "<span>没有任何音频文件夹哦～</span>";
-			$(".layer-body-content").html(str);
-		}
-	}
-
 	$("#addBtn").click(function(event) {
 		chrome.mediaGalleries.getMediaFileSystems({
 			interactive: "yes"
@@ -374,9 +405,9 @@ $(document).ready(function() {
 		$(".layer").hide();
 	});
 
-	$("div").on('dblclick', '.list-row',function(event) {
+	$("#leftCol2-songList,#leftCol2-singerList").on('dblclick', '.list-row',function(event) {
 		event.preventDefault();
-		localMusic.currentID = track.indexOf($(this).attr('data-galleryid')+","+$(this).attr('data-fullpath'));
+		localMusic.currentID = tag.indexOf($(this).attr('data-galleryid')+","+$(this).attr('data-fullpath'));
 		readFileAsPath($(this).attr('data-galleryid'), $(this).attr('data-fullpath'));
 		$(".title .songname").text($(':nth-child(1) .list-songname', this).text());
 		$(".title .artist").text($(':nth-child(2) .list-songname', this).text());
@@ -384,7 +415,6 @@ $(document).ready(function() {
 
 	$("ul").on('click', '.pause .ctrl-btn', function(event) {
 		event.preventDefault();
-
 		$(this).children().removeClass('icon-pause').addClass('icon-play');
 		$(this).attr('title', '播放');
 		$(this).parent().removeClass('pause').addClass('play');
@@ -394,7 +424,6 @@ $(document).ready(function() {
 
 	$("ul").on('click', '.play .ctrl-btn', function(event) {
 		event.preventDefault();
-
 		$(this).children().removeClass('icon-play').addClass('icon-pause');
 		$(this).attr('title', '暂停');
 		$(this).parent().removeClass('play').addClass('pause');
@@ -422,8 +451,15 @@ $(document).ready(function() {
 		}else if(event.keyCode == 39) {
 			var mode = parseInt($(".play-mode li a.selected").attr('data-mode'));
 			localMusic.playNext(mode);
+		}else if(event.keyCode == 38) {
+			var vol = $(".vol-slider-range").css('width') === "0px" ? 0 : (parseInt($(".vol-slider-range").css('width')) / parseInt($(".vol-slider-wrapper").width()));
+			myAudio.setVolume(vol+0.1);
+		}else if(event.keyCode == 40) {
+			var vol = $(".vol-slider-range").css('width') === "0px" ? 0 : (parseInt($(".vol-slider-range").css('width')) / parseInt($(".vol-slider-wrapper").width()));
+			myAudio.setVolume(vol-0.1);
 		}
 	});
+
 	// 上一首
 	$("ul").on('click', '.prev .ctrl-btn', function(event) {
 		event.preventDefault();
@@ -436,7 +472,6 @@ $(document).ready(function() {
 		var mode = parseInt($(".play-mode li a.selected").attr('data-mode'));
 		localMusic.playNext(mode);
 	});
-
 
 	$("#progressSlider").drag({
 	 	parent: ".panel",
@@ -503,6 +538,27 @@ $(document).ready(function() {
 		}
 	});
 
+	$(".singer-list").on('click', '.singer-list-row', function(event) {
+		event.preventDefault();
+		var singer = $(this).children('.singername').text();
+		$("#singerListViewport").empty();
+		$.indexedDB("localMusicDB").objectStore("musicList").index("artist").each(function(item) {
+			$("#singerListViewport").append('<div class="list-row even" data-fullpath="'+item.value.fullPath
+				+'" data-galleryid="'+item.value.galleryId
+				+'"><div class="list-cell c0"><span class="list-songname">'+item.value.title
+				+'</span></div><div class="list-cell c1"><span class="list-songname">'
+				+item.value.album
+				+'</span></div></div>');
+		}, singer).done(function(res, event) {});
+	});
+
+	$("#leftCol2-songList,#leftCol2-singerList").on('click', '.song-delete', function(event) {
+		event.preventDefault();
+		var gID = $(this).parent('.list-row').attr('data-galleryid');
+		var fullPath = $(this).parent('.list-row').attr('data-fullpath');
+		deleteMusic(gID, fullPath);
+		$(this).parent('.list-row').remove();
+	});
 	// debug
 	function C(str) {
 		console.log(str);
