@@ -15,9 +15,10 @@ $(document).ready(function() {
 		playPre: function(mode) {
 			switch(mode) {
 				case 0: 
-				if(localMusic.len < 1) break;
-				var oldIndex = localMusic.currentID;
-				while(localMusic.len > 1 && (localMusic.currentID = parseInt(Math.random()*(localMusic.len-1)+0.5))==oldIndex);
+				if(musicTag.length < 1) break;
+				var oldIndex = musicTagCurrentID;
+				while(musicTag.length > 1 && (musicTagCurrentID = parseInt(Math.random()*(musicTag.length-1)+0.5))==oldIndex);
+				localMusic.currentID = musicTag[musicTagCurrentID].id;
 				readFileAsPath(localMusic.array[localMusic.currentID].galleryId, localMusic.array[localMusic.currentID].fullPath);
 				break;
 				
@@ -30,7 +31,8 @@ $(document).ready(function() {
 				break;
 				
 				case 2: 
-				localMusic.currentID = ((localMusic.currentID - 1) < 0) ? (localMusic.len - 1) : localMusic.currentID - 1;
+				musicTagCurrentID = ((musicTagCurrentID - 1) < 0) ? (musicTag.length - 1) : (musicTagCurrentID - 1);
+				localMusic.currentID = musicTag[musicTagCurrentID].id;
 				readFileAsPath(localMusic.array[localMusic.currentID].galleryId, localMusic.array[localMusic.currentID].fullPath);
 				break;
 				
@@ -41,9 +43,10 @@ $(document).ready(function() {
 			// 随机，单曲，列表循环
 			switch(mode) {
 				case 0: 
-				if(localMusic.len < 1) break;
-				var oldIndex = localMusic.currentID;
-				while(localMusic.len > 1 && (localMusic.currentID = parseInt(Math.random()*(localMusic.len-1)+0.5))==oldIndex);
+				if(musicTag.length < 1) break;
+				var oldIndex = musicTagCurrentID;
+				while(musicTag.length > 1 && (musicTagCurrentID = parseInt(Math.random()*(musicTag.length-1)+0.5))==oldIndex);
+				localMusic.currentID = musicTag[musicTagCurrentID].id;
 				readFileAsPath(localMusic.array[localMusic.currentID].galleryId, localMusic.array[localMusic.currentID].fullPath);
 				break;
 
@@ -56,7 +59,8 @@ $(document).ready(function() {
 				break;
 
 				case 2: 
-				localMusic.currentID = ((localMusic.currentID+1) >= localMusic.len) ? 0 : localMusic.currentID+1;
+				musicTagCurrentID = ((musicTagCurrentID+1) >= musicTag.length) ? 0 : (musicTagCurrentID+1);
+				localMusic.currentID = musicTag[musicTagCurrentID].id;
 				readFileAsPath(localMusic.array[localMusic.currentID].galleryId, localMusic.array[localMusic.currentID].fullPath);
 				break;
 
@@ -64,7 +68,9 @@ $(document).ready(function() {
 			}
 		}
 	};
-	var tag = [];
+
+	var musicTag = [];// 有效歌曲列表（除去回收站）
+	var musicTagCurrentID = 0;// 有效歌曲当前id
 	var onlineMusicArray = [];
 	var localMusicIndex = 0;// 本地音乐计数
 	var myAudio = audio.createPlayer();
@@ -116,6 +122,7 @@ $(document).ready(function() {
 
 	function addItem(item) {
 		if(!item)return ;
+		var target = arguments[1] ? arguments[1] : "#GalleryList";// 插入节点的父节点
 
 		var parentDiv = $("<div></div>");
 		parentDiv.addClass('list-row');
@@ -146,7 +153,7 @@ $(document).ready(function() {
 		childDelete.addClass('song-delete');
 		childDelete.append('<span class="delete"><i class="icon-remove-2"></i></span>')
    		parentDiv.append(childDelete);
-   		$("#GalleryList").append(parentDiv);
+   		$(target).append(parentDiv);
 	}
 
 	function scanSongs(DOMFileSystem) {
@@ -211,7 +218,10 @@ $(document).ready(function() {
 							var musicInfo = Mp3.getMp3Info(galleryId, result, fullPath);
 							localMusic.array.push(musicInfo);
 							addItem(musicInfo);
-							tag.push(musicInfo.galleryId.toString()+","+musicInfo.fullPath.toString());
+							musicTag.push({
+								tag: musicInfo.galleryId.toString()+","+musicInfo.fullPath.toString(),
+								id: localMusicIndex
+							});
 							if(localMusic.artist.indexOf(musicInfo.artist) == -1) {
 								localMusic.artist.push(musicInfo.artist.toString());
 								$(".singer-list").append('<div class="singer-list-row"><div class="singername"><span>'+musicInfo.artist.toString()+'</span></div></div>');
@@ -235,10 +245,11 @@ $(document).ready(function() {
 	// 从指定媒体库中读取某个文件并【播放】
 	function readFileAsPath(galleryId, fullPath) {
 		if(galleryId && fullPath) {
+			musicTagCurrentID = getIdFromTag(galleryId.toString(), fullPath.toString());
+			localMusic.currentID = musicTag[musicTagCurrentID].id;
 			$(".title .artist").text(localMusic.array[localMusic.currentID].artist);
 			$(".title .songname").text(localMusic.array[localMusic.currentID].title);
 			var gallery = mGalleryArray[galleryId - 1];
-			localMusic.currentID = tag.indexOf(galleryId.toString()+","+fullPath.toString());
 			gallery.root.getFile(fullPath, {create: false}, function(fileEntry) {
 				fileEntry.file(function(file) {
 					var src = window.webkitURL.createObjectURL(file);
@@ -254,23 +265,40 @@ $(document).ready(function() {
 	function addItemList(obj) {
 		obj.array = [];
 		obj.artist = [];
-		tag = [];
+		musicTag = [];
+		var cnt = 0;// 计数
+		// 遍历数据库已存在歌曲（包括回收站）
 		$.indexedDB("localMusicDB").objectStore("musicList").each(function(item) {
-			if(item.value.galleryId == -1) return true;
-
-			addItem(item.value);
 			obj.array.push(item.value);
 			if(obj.artist.indexOf(item.value.artist.toString()) == -1) {
 				obj.artist.push(item.value.artist.toString());
 			}
-			tag.push(item.value.galleryId.toString()+","+item.value.fullPath.toString());
+			if(item.value.galleryId == -1) {
+				cnt++;
+				return true;
+			}
+			addItem(item.value);
+			musicTag.push({
+				tag: item.value.galleryId+","+item.value.fullPath,
+				id: cnt // 指向数组位置（0开始）
+			});
+			cnt++;
 		}).done(function() {
+			// 遍历完成后回调函数
 			if(localMusic.artist.length) {
+				// 遍历歌手
 				localMusic.artist.forEach(function(item, index, arr) {
 					$(".singer-list").append('<div class="singer-list-row"><div class="singername"><span>'+item+'</span></div></div>');
 				});
 			}
+			obj.len = cnt;
 		});
+	}
+
+	function addItem2Recycle() {
+		$.indexedDB("localMusicDB").objectStore("musicList").index("galleryId").each(function(item) {
+			addItem(item.value, "#RecycleList");
+		}, "-1").done(function(res, event) {});
 	}
 
 	function getMusicInfo(results) {
@@ -296,7 +324,9 @@ $(document).ready(function() {
 			$(".layer-body-content").html(str);
 		}
 	}
-	function deleteMusic(galleryId, fullPath) {
+
+	// 把数据库galleryId修改为-1
+	function updateMusicInDB(galleryId, fullPath) {
 		localMusic.array.forEach(function(item, index, arr) {
 			if(item.galleryId === galleryId && item.fullPath === fullPath) {
 				var tmp = item;
@@ -306,13 +336,15 @@ $(document).ready(function() {
 			}
 		});
 	}
+
 	myAudio.onEndedHandle = function() {
 		var mode = parseInt($(".play-mode li a.selected").attr('data-mode'));
 		switch(mode) {
 			case 0: 
-			if(localMusic.len < 1) break;
-			var oldIndex = localMusic.currentID;
-			while(localMusic.len > 1 && (localMusic.currentID = parseInt(Math.random()*(localMusic.len-1)+0.5))==oldIndex);
+			if(musicTag.length < 1) break;
+			var oldIndex = musicTagCurrentID;
+			while(musicTag.length > 1 && (musicTagCurrentID = parseInt(Math.random()*(musicTag.length-1)+0.5))==oldIndex);
+			localMusic.currentID = musicTag[musicTagCurrentID].id;
 			readFileAsPath(localMusic.array[localMusic.currentID].galleryId, localMusic.array[localMusic.currentID].fullPath);
 			break;
 			case 1: 
@@ -320,27 +352,54 @@ $(document).ready(function() {
 			myAudio.play();
 			break;
 			case 2: 
-			localMusic.currentID = ((localMusic.currentID+1) >= localMusic.len) ? 0 : localMusic.currentID+1;
+			musicTagCurrentID = ((musicTagCurrentID+1) >= musicTag.length) ? 0 : (musicTagCurrentID+1);
+			localMusic.currentID = musicTag[musicTagCurrentID].id;
 			readFileAsPath(localMusic.array[localMusic.currentID].galleryId, localMusic.array[localMusic.currentID].fullPath);
 			break;
 			default: break;
 		}
 	};
 
+	function deleteMusicTag(galleryId, fullPath) {
+		var idx = -1;
+		musicTag.forEach(function(item, index, arr) {
+			if(item.tag === (galleryId+","+fullPath)) {
+				idx = item.id;
+				return false;
+			}
+		});
+		if(idx != -1) {
+			musicTag.splice(idx, 1);
+		}
+	};
+	// 返回musicTag的下标！
+	function getIdFromTag(galleryId, fullPath) {
+		var idx = -1;
+		musicTag.forEach(function(item, index, arr) {
+			if(item.tag === (galleryId+","+fullPath)) {
+				idx = index;
+				return false;
+			}
+		});
+		return idx;
+	}
 	///////////////////////////// app初始化开始 /////////////////////////////
 	var init = function() {
 		$("#local").addClass('menu-active');
 		$("#onlineBody").hide();
 		$("#leftCol2-songList").show();
 		$("#leftCol2-singerList").hide();
+		$("#leftCol2-recycleList").hide();
 		$(".shade").hide();
 		$(".layer").hide();
 		$(".scanTipsLayer").hide();
 		chrome.mediaGalleries.getMediaFileSystems({
 			interactive: "no"
 		}, getMusicInfo);
+
 		// $.indexedDB("localMusicDB").deleteDatabase();
 		$.indexedDB("localMusicDB", {
+			version: 1,
 			schema: {
 				"1": function(tran) {
 					var objStore = tran.createObjectStore("musicList", {
@@ -349,6 +408,7 @@ $(document).ready(function() {
 					objStore.createIndex("artist");
 					objStore.createIndex("album");
 					objStore.createIndex("title");
+					objStore.createIndex("galleryId");
 				}
 			}
 		}).done(function() {});
@@ -373,6 +433,10 @@ $(document).ready(function() {
 		$(this).addClass('list-actived').siblings().removeClass('list-actived');
 		var tabID = $(this).attr('id');
 		$("#leftCol2-"+tabID).show().siblings().hide();
+		if(tabID == "recycleList") {
+			$("#RecycleList").empty();
+			addItem2Recycle();
+		}
 	});
 
 	// 打开文件点击事件
@@ -407,7 +471,9 @@ $(document).ready(function() {
 
 	$("#leftCol2-songList,#leftCol2-singerList").on('dblclick', '.list-row',function(event) {
 		event.preventDefault();
-		localMusic.currentID = tag.indexOf($(this).attr('data-galleryid')+","+$(this).attr('data-fullpath'));
+		musicTagCurrentID = getIdFromTag($(this).attr('data-galleryid'), $(this).attr('data-fullpath'));
+		if(musicTagCurrentID == -1) return false;// musicTag不存在歌曲记录
+		localMusic.currentID = musicTag[musicTagCurrentID].id;
 		readFileAsPath($(this).attr('data-galleryid'), $(this).attr('data-fullpath'));
 		$(".title .songname").text($(':nth-child(1) .list-songname', this).text());
 		$(".title .artist").text($(':nth-child(2) .list-songname', this).text());
@@ -418,8 +484,7 @@ $(document).ready(function() {
 		$(this).children().removeClass('icon-pause').addClass('icon-play');
 		$(this).attr('title', '播放');
 		$(this).parent().removeClass('pause').addClass('play');
-		myAudio.pause();	
-
+		myAudio.pause();
 	});
 
 	$("ul").on('click', '.play .ctrl-btn', function(event) {
@@ -431,7 +496,8 @@ $(document).ready(function() {
 	});
 
 	$(this).on('keydown', function(event) {
-		event.preventDefault();
+		// event.preventDefault();
+		// C(event.keyCode);
 		if(event.keyCode == 32) {
 			var tt = ".play-btn .play-pause a";
 			if($(".play-btn .play-pause").hasClass('pause')) {
@@ -457,6 +523,14 @@ $(document).ready(function() {
 		}else if(event.keyCode == 40) {
 			var vol = $(".vol-slider-range").css('width') === "0px" ? 0 : (parseInt($(".vol-slider-range").css('width')) / parseInt($(".vol-slider-wrapper").width()));
 			myAudio.setVolume(vol-0.1);
+		}else if(event.keyCode == 27){ // Esc
+			event.preventDefault();
+			// if(chrome.app.window.current().isFullscreen()) {
+			// 	$(".widget .fullscreen .ctrl-btn").attr('title', '全屏');
+			// 	chrome.app.window.current().restore();
+			// }else {
+			// 	$(".widget .fullscreen .ctrl-btn").attr('title', '退出全屏');
+			// }
 		}
 	});
 
@@ -556,9 +630,22 @@ $(document).ready(function() {
 		event.preventDefault();
 		var gID = $(this).parent('.list-row').attr('data-galleryid');
 		var fullPath = $(this).parent('.list-row').attr('data-fullpath');
-		deleteMusic(gID, fullPath);
+		updateMusicInDB(gID, fullPath);
+		deleteMusicTag(gID, fullPath);
 		$(this).parent('.list-row').remove();
 	});
+
+	$(".widget").on('click', '.fullscreen', function(event) {
+		event.preventDefault();
+		if(chrome.app.window.current().isFullscreen()) {
+			$(this).children('a').attr('title', '全屏');
+			chrome.app.window.current().restore();
+		}else {
+			$(this).children('a').attr('title', '退出全屏');
+			chrome.app.window.current().fullscreen()
+		}
+	});
+
 	// debug
 	function C(str) {
 		console.log(str);

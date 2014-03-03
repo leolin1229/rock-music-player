@@ -365,6 +365,7 @@
 							try {
 								if(debug) console.log("DB Opened, now trying to create a transaction", storeNames, mode);
 								idbTransaction = db.transaction(storeNames, mode);
+
 								if(debug) console.log("Created a transaction", idbTransaction, mode, storeNames);
 								idbTransaction.onabort = idbTransaction.onerror = function(e) {
 									dfd.rejectWith(idbTransaction, [e]);
