@@ -510,7 +510,7 @@ header {
 
 /*鼠标悬浮每一行*/
 .list-row:hover {
-	-webkit-transform: translateX(51px);
+	-webkit-transform: translateX(102px);
 }
 
 .list-cell {
@@ -711,4 +711,21 @@ header {
 	text-align: center;
 	color: #fff;
 	margin-left: -51px;
+}
+.song-restore, .song-play{
+	position: absolute;
+	width: 51px;
+	height: 50px;
+	top: 0;
+	left: 0;
+	background-color: #4d4d4d;
+	line-height: 50px;
+	text-align: center;
+	color: #fff;
+	margin-left: -102px;
+	border-right: 1px solid grey;
+}
+
+.list-row i {
+	font-size: 18px;
 }

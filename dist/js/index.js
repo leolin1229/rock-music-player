@@ -133,26 +133,39 @@ $(document).ready(function() {
 		}
 		parentDiv.attr('data-fullpath', item.fullPath);
 		parentDiv.attr('data-galleryid', item.galleryId);
-   			// col1
+   		// col1
    		var childDiv0 = $("<div></div>");
    		childDiv0.addClass('list-cell c0');
    		childDiv0.append('<span class="list-songname">' + item.title + '</span>');
    		parentDiv.append(childDiv0);
-   			// col2
+   		// col2
    		var childDiv1 = $("<div></div>");
    		childDiv1.addClass('list-cell c1');
    		childDiv1.append('<span class="list-songname">' + item.artist + '</span>');
    		parentDiv.append(childDiv1);
-   			// col3
+   		// col3
    		var childDiv2 = $("<div></div>");
    		childDiv2.addClass('list-cell c2');
    		childDiv2.append('<span class="list-songname">' + item.album + '</span>');
    		parentDiv.append(childDiv2);
-   			// 
+   		// delete
    		var childDelete = $("<div></div>");
 		childDelete.addClass('song-delete');
 		childDelete.append('<span class="delete"><i class="icon-remove-2"></i></span>')
    		parentDiv.append(childDelete);
+   		// 
+   		if(target == "#GalleryList") {
+   			var childPlay = $("<div></div>");
+			childPlay.addClass('song-play');
+			childPlay.append('<span class="play"><i class="icon-play"></i></span>')
+   			parentDiv.append(childPlay);
+   		}
+   		if(target == "#RecycleList") {
+   			var childRestore = $("<div></div>");
+			childRestore.addClass('song-restore');
+			childRestore.append('<span class="play"><i class="icon-restart"></i></span>')
+   			parentDiv.append(childRestore);
+   		}
    		$(target).append(parentDiv);
 	}
 
@@ -220,7 +233,7 @@ $(document).ready(function() {
 							addItem(musicInfo);
 							musicTag.push({
 								tag: musicInfo.galleryId.toString()+","+musicInfo.fullPath.toString(),
-								id: localMusicIndex
+								id: parseInt(localMusicIndex)
 							});
 							if(localMusic.artist.indexOf(musicInfo.artist) == -1) {
 								localMusic.artist.push(musicInfo.artist.toString());
@@ -245,8 +258,10 @@ $(document).ready(function() {
 	// 从指定媒体库中读取某个文件并【播放】
 	function readFileAsPath(galleryId, fullPath) {
 		if(galleryId && fullPath) {
-			musicTagCurrentID = getIdFromTag(galleryId.toString(), fullPath.toString());
+			musicTagCurrentID = getIdFromTag(galleryId, fullPath);
+			if(musicTagCurrentID < 0) return ;
 			localMusic.currentID = musicTag[musicTagCurrentID].id;
+			if(localMusic.currentID < 0) return ;
 			$(".title .artist").text(localMusic.array[localMusic.currentID].artist);
 			$(".title .songname").text(localMusic.array[localMusic.currentID].title);
 			var gallery = mGalleryArray[galleryId - 1];
@@ -273,14 +288,14 @@ $(document).ready(function() {
 			if(obj.artist.indexOf(item.value.artist.toString()) == -1) {
 				obj.artist.push(item.value.artist.toString());
 			}
-			if(item.value.galleryId == -1) {
+			if(parseInt(item.value.galleryId) < 0) {
 				cnt++;
 				return true;
 			}
 			addItem(item.value);
 			musicTag.push({
 				tag: item.value.galleryId+","+item.value.fullPath,
-				id: cnt // 指向数组位置（0开始）
+				id: parseInt(cnt) // 指向数组位置（0开始）
 			});
 			cnt++;
 		}).done(function() {
@@ -298,7 +313,7 @@ $(document).ready(function() {
 	function addItem2Recycle() {
 		$.indexedDB("localMusicDB").objectStore("musicList").index("galleryId").each(function(item) {
 			addItem(item.value, "#RecycleList");
-		}, "-1").done(function(res, event) {});
+		}, [-100000, 0]).done(function(res, event) {});
 	}
 
 	function getMusicInfo(results) {
@@ -327,14 +342,25 @@ $(document).ready(function() {
 
 	// 把数据库galleryId修改为-1
 	function updateMusicInDB(galleryId, fullPath) {
+		var bool = false;
 		localMusic.array.forEach(function(item, index, arr) {
-			if(item.galleryId === galleryId && item.fullPath === fullPath) {
+			if(item.galleryId == parseInt(galleryId) && item.fullPath == fullPath) {
 				var tmp = item;
-				tmp.galleryId = "-1";
+				tmp.galleryId = (-1-parseInt(galleryId));
+				if(parseInt(tmp.galleryId) > 0) {// 恢复
+					localMusic.array[index].galleryId = parseInt(tmp.galleryId);
+					addItem(item);
+					musicTag.push({
+						id: parseInt(index),
+						tag: tmp.galleryId.toString()+","+fullPath.toString()
+					});
+				}
 				$.indexedDB("localMusicDB").objectStore("musicList").put(tmp, index+1);
+				bool = true;
 				return false;
 			}
 		});
+		return bool;
 	}
 
 	myAudio.onEndedHandle = function() {
@@ -363,7 +389,7 @@ $(document).ready(function() {
 	function deleteMusicTag(galleryId, fullPath) {
 		var idx = -1;
 		musicTag.forEach(function(item, index, arr) {
-			if(item.tag === (galleryId+","+fullPath)) {
+			if(item.tag == (galleryId+","+fullPath)) {
 				idx = item.id;
 				return false;
 			}
@@ -376,12 +402,24 @@ $(document).ready(function() {
 	function getIdFromTag(galleryId, fullPath) {
 		var idx = -1;
 		musicTag.forEach(function(item, index, arr) {
-			if(item.tag === (galleryId+","+fullPath)) {
+			if(item.tag == (galleryId+","+fullPath)) {
 				idx = index;
 				return false;
 			}
 		});
 		return idx;
+	}
+
+	function deleteMusicInDB(galleryId, fullPath) {
+		var bool = false;
+		localMusic.array.forEach(function(item, index, arr) {
+			if(item.galleryId == parseInt(galleryId) && item.fullPath == fullPath) {
+				$.indexedDB("localMusicDB").objectStore("musicList").delete(index+1);
+				bool = true;
+				return false;
+			}
+		});
+		return bool;
 	}
 	///////////////////////////// app初始化开始 /////////////////////////////
 	var init = function() {
@@ -626,6 +664,7 @@ $(document).ready(function() {
 		}, singer).done(function(res, event) {});
 	});
 
+	// 回收站
 	$("#leftCol2-songList,#leftCol2-singerList").on('click', '.song-delete', function(event) {
 		event.preventDefault();
 		var gID = $(this).parent('.list-row').attr('data-galleryid');
@@ -635,6 +674,25 @@ $(document).ready(function() {
 		$(this).parent('.list-row').remove();
 	});
 
+	// 彻底删除
+	$("#leftCol2-recycleList").on('click', '#RecycleList .song-delete', function(event) {
+		event.preventDefault();
+		var gID = $(this).parent('.list-row').attr('data-galleryid');
+		var fullPath = $(this).parent('.list-row').attr('data-fullpath');
+		if(deleteMusicInDB(gID, fullPath)) {
+			$(this).parent('.list-row').remove();
+		}
+	});
+	// 恢复回收站歌曲
+	$("#leftCol2-recycleList").on('click', '#RecycleList .song-restore', function(event) {
+		event.preventDefault();
+		var gID = $(this).parent('.list-row').attr('data-galleryid');
+		var fullPath = $(this).parent('.list-row').attr('data-fullpath');
+		if(updateMusicInDB(gID, fullPath)) {
+			$(this).parent('.list-row').remove();
+		}
+	});
+	// 全屏
 	$(".widget").on('click', '.fullscreen', function(event) {
 		event.preventDefault();
 		if(chrome.app.window.current().isFullscreen()) {

@@ -127,7 +127,7 @@ var Mp3 = {
     			'apic': getApic(result),
     			'album': getAlbum(result),
     			'fullPath': fullPath,
-                'galleryId': galleryId,
+                'galleryId': parseInt(galleryId),
                 'like': false
     		};
     		return info;
