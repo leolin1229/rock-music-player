@@ -120,33 +120,50 @@ $(document).ready(function() {
    		return optGrp;
 	}
 
-	function addItem(item) {
+	function addItem(index, item) {
 		if(!item)return ;
-		var target = arguments[1] ? arguments[1] : "#GalleryList";// 插入节点的父节点
+		var target = arguments[2] ? arguments[2] : "#GalleryList";// 插入节点的父节点
 
 		var parentDiv = $("<div></div>");
 		parentDiv.addClass('list-row');
-		if(localMusicIndex % 2) {
+		if(parseInt(index) % 2) {
 			parentDiv.addClass('odd');
 		}else {
 			parentDiv.addClass('even');
 		}
-		parentDiv.attr('data-fullpath', item.fullPath);
-		parentDiv.attr('data-galleryid', item.galleryId);
+
+		if(target == "#SearchList") {
+			parentDiv.attr('data-src', item.songLink);
+		}else {
+			parentDiv.attr('data-fullpath', item.fullPath);
+			parentDiv.attr('data-galleryid', item.galleryId);
+		}
    		// col1
    		var childDiv0 = $("<div></div>");
    		childDiv0.addClass('list-cell c0');
-   		childDiv0.append('<span class="list-songname">' + item.title + '</span>');
+   		if(target == "#SearchList") {
+   			childDiv0.append('<span class="list-songname">' + item.songName + '</span>');
+   		}else {
+   			childDiv0.append('<span class="list-songname">' + item.title + '</span>');
+   		}
    		parentDiv.append(childDiv0);
    		// col2
    		var childDiv1 = $("<div></div>");
    		childDiv1.addClass('list-cell c1');
-   		childDiv1.append('<span class="list-songname">' + item.artist + '</span>');
+   		if(target == "#SearchList") {
+   			childDiv1.append('<span class="list-songname">' + item.artistName + '</span>');
+   		}else {
+   			childDiv1.append('<span class="list-songname">' + item.artist + '</span>');
+   		}
    		parentDiv.append(childDiv1);
    		// col3
    		var childDiv2 = $("<div></div>");
    		childDiv2.addClass('list-cell c2');
-   		childDiv2.append('<span class="list-songname">' + item.album + '</span>');
+   		if(target == "#SearchList") {
+   			childDiv2.append('<span class="list-songname">' + item.albumName + '</span>');
+   		}else {
+   			childDiv2.append('<span class="list-songname">' + item.album + '</span>');
+   		}
    		parentDiv.append(childDiv2);
    		// delete
    		var childDelete = $("<div></div>");
@@ -154,7 +171,7 @@ $(document).ready(function() {
 		childDelete.append('<span class="delete"><i class="icon-remove-2"></i></span>')
    		parentDiv.append(childDelete);
    		// 
-   		if(target == "#GalleryList") {
+   		if(target == "#GalleryList" || target=="#SearchList") {
    			var childPlay = $("<div></div>");
 			childPlay.addClass('song-play');
 			childPlay.append('<span class="play"><i class="icon-play"></i></span>')
@@ -230,7 +247,7 @@ $(document).ready(function() {
 							localMusic.len = localMusicIndex;
 							var musicInfo = Mp3.getMp3Info(galleryId, result, fullPath);
 							localMusic.array.push(musicInfo);
-							addItem(musicInfo);
+							addItem(localMusicIndex, musicInfo);
 							musicTag.push({
 								tag: musicInfo.galleryId.toString()+","+musicInfo.fullPath.toString(),
 								id: parseInt(localMusicIndex)
@@ -292,7 +309,7 @@ $(document).ready(function() {
 				cnt++;
 				return true;
 			}
-			addItem(item.value);
+			addItem(cnt, item.value);
 			musicTag.push({
 				tag: item.value.galleryId+","+item.value.fullPath,
 				id: parseInt(cnt) // 指向数组位置（0开始）
@@ -311,8 +328,10 @@ $(document).ready(function() {
 	}
 
 	function addItem2Recycle() {
+		var cnt = 0;
 		$.indexedDB("localMusicDB").objectStore("musicList").index("galleryId").each(function(item) {
-			addItem(item.value, "#RecycleList");
+			addItem(cnt, item.value, "#RecycleList");
+			cnt++;
 		}, [-100000, 0]).done(function(res, event) {});
 	}
 
@@ -349,7 +368,7 @@ $(document).ready(function() {
 				tmp.galleryId = (-1-parseInt(galleryId));
 				if(parseInt(tmp.galleryId) > 0) {// 恢复
 					localMusic.array[index].galleryId = parseInt(tmp.galleryId);
-					addItem(item);
+					addItem(index, item);
 					musicTag.push({
 						id: parseInt(index),
 						tag: tmp.galleryId.toString()+","+fullPath.toString()
@@ -507,12 +526,17 @@ $(document).ready(function() {
 		$(".layer").hide();
 	});
 
-	$("#leftCol2-songList,#leftCol2-singerList").on('dblclick', '.list-row',function(event) {
+	$("#leftCol2-songList, #leftCol2-singerList, #leftCol2-search-result").on('dblclick', '.list-row',function(event) {
 		event.preventDefault();
-		musicTagCurrentID = getIdFromTag($(this).attr('data-galleryid'), $(this).attr('data-fullpath'));
-		if(musicTagCurrentID == -1) return false;// musicTag不存在歌曲记录
-		localMusic.currentID = musicTag[musicTagCurrentID].id;
-		readFileAsPath($(this).attr('data-galleryid'), $(this).attr('data-fullpath'));
+		if($(this).parent('#SearchList').length > 0) {
+			C(123);
+			myAudio.setSrc($(this).attr('data-src'));
+		}else {
+			musicTagCurrentID = getIdFromTag($(this).attr('data-galleryid'), $(this).attr('data-fullpath'));
+			if(musicTagCurrentID == -1) return false;// musicTag不存在歌曲记录
+			localMusic.currentID = musicTag[musicTagCurrentID].id;
+			readFileAsPath($(this).attr('data-galleryid'), $(this).attr('data-fullpath'));
+		}
 		$(".title .songname").text($(':nth-child(1) .list-songname', this).text());
 		$(".title .artist").text($(':nth-child(2) .list-songname', this).text());
 	});
@@ -549,12 +573,12 @@ $(document).ready(function() {
 				$(tt).parent().removeClass('play').addClass('pause');
 				myAudio.play();
 			}
-		}else if(event.keyCode == 37) {
-			var mode = parseInt($(".play-mode li a.selected").attr('data-mode'));
-			localMusic.playPre(mode);
-		}else if(event.keyCode == 39) {
-			var mode = parseInt($(".play-mode li a.selected").attr('data-mode'));
-			localMusic.playNext(mode);
+		// }else if(event.keyCode == 37) {
+			// var mode = parseInt($(".play-mode li a.selected").attr('data-mode'));
+			// localMusic.playPre(mode);
+		// }else if(event.keyCode == 39) {
+			// var mode = parseInt($(".play-mode li a.selected").attr('data-mode'));
+			// localMusic.playNext(mode);
 		}else if(event.keyCode == 38) {
 			var vol = $(".vol-slider-range").css('width') === "0px" ? 0 : (parseInt($(".vol-slider-range").css('width')) / parseInt($(".vol-slider-wrapper").width()));
 			myAudio.setVolume(vol+0.1);
@@ -704,8 +728,33 @@ $(document).ready(function() {
 		}
 	});
 
+	$("#menu ul").on('keyup', '#search input', function(event) {
+		event.preventDefault();
+		var keyword = $(this).val();
+		$.ajax({
+			url: 'http://song4u.sinaapp.com/api/search.php?keyword='+keyword,
+			type: 'GET',
+			dataType: 'json',
+			success: function(res){
+				$("#menu ul #online").addClass('menu-active').siblings().removeClass('menu-active');
+				$("#onlineBody").show().siblings().hide();
+				$("#leftCol2 .leftbar-outer #search-result").addClass('list-actived').siblings().removeClass('list-actived');
+				res.songs.forEach(function(item, index, arr) {
+					// C(item);
+					addItem(index, item, "#SearchList");
+				});
+			},
+			error: function(error) {}
+		})
+		
+	});
+
+
 	// debug
 	function C(str) {
 		console.log(str);
 	}
 });
+
+// http://song4u.sinaapp.com/api/search.php?keyword=
+// http://ting.baidu.com/

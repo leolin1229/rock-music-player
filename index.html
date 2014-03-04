@@ -66,8 +66,8 @@
 						<span>添加几首歌吧！</span>
 					</div>
 					 -->
-					 <div class="list-viewport" id="GalleryList">
-					 </div>
+					<div class="list-viewport" id="GalleryList">
+					</div>
 				</div>
 
 				<!-- 歌手列表 -->
@@ -112,14 +112,33 @@
 		<section id="onlineBody">
 			<div class="column2 layout-bd" id="leftCol2">
 				<div class="leftbar-outer">
-					<div class="list list-actived">
+					<div class="list list-actived" id="popular">
 						<a class="list-btn" hidefocus="true"><i class="icon-cardio"><span class="split"></span>音乐正流行</i></a>
 					</div>
-					<div class="list">
+					<div class="list" id="fm">
 						<a class="list-btn" hidefocus="true"><i class="icon-wifi-alt"><span class="split"></span>音乐电台</i></a>
 					</div>
-					<div class="list">
+					<div class="list" id="search-result">
 						<a class="list-btn" hidefocus="true"><i class="icon-search"><span class="split"></span>搜索结果</i></a>
+					</div>
+				</div>
+			</div>
+			<div class="tab-content column2">
+				<div id="leftCol2-popular"></div>
+				<div id="leftCol2-fm"></div>
+				<div id="leftCol2-search-result">
+					<div class="list-header">
+						<div class="list-header-column c0">
+							<span class="item">歌曲</span>
+						</div>
+						<div class="list-header-column c1">
+							<span class="item">歌手</span>
+						</div>
+						<div class="list-header-column c2">
+							<span class="item">专辑</span>
+						</div>
+					</div>
+					<div class="list-viewport" id="SearchList">
 					</div>
 				</div>
 			</div>

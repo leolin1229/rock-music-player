@@ -2,7 +2,14 @@
   "manifest_version": 2,
   "name": "Rock Music Player",
   "version": "2",
-  "permissions": ["fileSystem" ,{ "mediaGalleries": ["read", "allAutoDetected"] }, "storage"],
+  "permissions": [
+    "fileSystem" ,
+    {"mediaGalleries": ["read", "allAutoDetected"] }, 
+    "storage",
+    "http://song4u.sinaapp.com/*",
+    "http://ting.baidu.com/*",
+    "http://zhangmenshiting.baidu.com/*"
+  ],
   "app": {
     "background": {
       "scripts": ["main.js"]
