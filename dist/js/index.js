@@ -735,10 +735,14 @@ $(document).ready(function() {
 			url: 'http://song4u.sinaapp.com/api/search.php?keyword='+keyword,
 			type: 'GET',
 			dataType: 'json',
-			success: function(res){
+			// beforeSend: function() {
+			// 	$("#SearchList").innerHTML("<p>正在完成</p>");
+			// },
+			success: function(res) {
 				$("#menu ul #online").addClass('menu-active').siblings().removeClass('menu-active');
 				$("#onlineBody").show().siblings().hide();
 				$("#leftCol2 .leftbar-outer #search-result").addClass('list-actived').siblings().removeClass('list-actived');
+				$("#SearchList").empty();
 				res.songs.forEach(function(item, index, arr) {
 					// C(item);
 					addItem(index, item, "#SearchList");
@@ -748,7 +752,6 @@ $(document).ready(function() {
 		})
 		
 	});
-
 
 	// debug
 	function C(str) {
