@@ -1,7 +1,7 @@
 "use strict";
+
 var audio = {
 	audioEle: null,
-	audioData: null,
 	formatTime: function(time) {
 		if (!isFinite(time) || time < 0) {
 			return "";
@@ -20,10 +20,9 @@ var audio = {
 		_audio.addEventListener('pause', this.onPause, false);
 		// _audio.addEventListener('ended', this.onEnded, false);// 为什么无法Ended事件？
 		_audio.addEventListener('error', this.onError, false);
-		_audio.addEventListener('progress', this.onProgress, false);
 		_audio.addEventListener('timeupdate', this.onTimeUpdate, false);
 		_audio.volume = 0.5;
-		
+		_audio.duration = 0;
 		$(".vol-slider-range").css('width', '50%');
 		$(".vol-slider-handle").css('left', parseInt($(".vol-slider-range").width()) + 'px');
 		$(".slider-range").css('width', '0%');
@@ -31,6 +30,9 @@ var audio = {
 		$(".title.songname").text('');
 		$(".title.artist").text('');
 		return this;
+	},
+	onCanplaythrough:function() {
+		C("onCanplaythrough");
 	},
 	setCurrentTime: function(percent) {
 		if(this.audioEle.duration) {
@@ -44,6 +46,7 @@ var audio = {
 		this.audioEle.pause();
 		this.audioEle.src = null;
 		this.audioEle.src = src;
+		this.audioEle.autoplay = true;
 		$(".slider-range").css('width', '0%');
 		$(".slider-handle").css('width', '0%');
 		$(".icon-play").removeClass('icon-play').addClass('icon-pause');
@@ -85,30 +88,28 @@ var audio = {
 		this.audioEle.loop = false;
 	},
 	onLoadedMetaData: function() {
-		var _audio = audio.audioEle;
-		_audio.loop = false;
-		var duration = audio.formatTime(_audio.duration);
+		var duration = audio.formatTime(this.duration);
+		this.loop = false;
 		$(".total-time").text(duration);
 	},
 	onCanPlay: function() {},
 	onPlay: function() {},
 	onPause: function() {},
 	onEnded: function() {
-		if (typeof audio.onEndedHandle == "function") {
+		this.audioEle.currentTime = 0;
+		if (typeof audio.onEndedHandle === "function") {
 			audio.onEndedHandle();
 		}
 	},
 	onEndedHandle: function() {},
-	onProgress: function() {},
 	onTimeUpdate: function() {
-		var _audio = audio.audioEle;
-		var cur = _audio.currentTime,
-			dur = _audio.duration;
+		var cur = this.currentTime,
+			dur = this.duration;
 		$(".slider-range").css('width', cur / dur * 100 + "%");
 		$(".slider-handle").css('left', cur / dur * parseInt($("#progressSlider").width()) + "px");
 		$(".current-time").text(audio.formatTime(cur));
 		try {
-			var buf = _audio.buffered.end(0);
+			var buf = this.buffered.end(0);
 			$(".slider-buffer").css('width', buf / dur * 100 + '%');
 		} catch (error) {console.log("音频缓冲错误：" + error);}
 		if(cur == dur) {

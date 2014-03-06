@@ -1,5 +1,5 @@
 $(document).ready(function() {
-	"use strict";
+	"use strict";//
 
 	// 全局变量
 	var mGalleryIndex = 0;
@@ -74,7 +74,7 @@ $(document).ready(function() {
 	var onlineMusicArray = [];
 	var localMusicIndex = 0;// 本地音乐计数
 	var myAudio = audio.createPlayer();
-
+	
 	// 打印错误信息
 	function errorHandler(custom) {
 		return function(e) {
@@ -166,10 +166,17 @@ $(document).ready(function() {
    		}
    		parentDiv.append(childDiv2);
    		// delete
-   		var childDelete = $("<div></div>");
-		childDelete.addClass('song-delete');
-		childDelete.append('<span class="delete"><i class="icon-remove-2"></i></span>')
-   		parentDiv.append(childDelete);
+		if(target=="#SearchList") {
+			var childLike = $("<div></div>");
+			childLike.addClass('song-like');
+			childLike.append('<span class="like"><i class="icon-heart"></i></span>')
+   			parentDiv.append(childLike);
+		}else {
+			var childDelete = $("<div></div>");
+			childDelete.addClass('song-delete');
+			childDelete.append('<span class="delete"><i class="icon-remove-2"></i></span>')
+   			parentDiv.append(childDelete);	
+		}
    		// 
    		if(target == "#GalleryList" || target=="#SearchList") {
    			var childPlay = $("<div></div>");
@@ -453,7 +460,6 @@ $(document).ready(function() {
 		chrome.mediaGalleries.getMediaFileSystems({
 			interactive: "no"
 		}, getMusicInfo);
-
 		// $.indexedDB("localMusicDB").deleteDatabase();
 		$.indexedDB("localMusicDB", {
 			version: 1,
@@ -483,6 +489,10 @@ $(document).ready(function() {
 		$(this).addClass('menu-active').siblings().removeClass('menu-active');
 		var menuID = $(this).attr('id');
 		$("#"+menuID+"Body").show().siblings().hide();
+		if(menuID=="online") {
+			$("#popular").addClass('list-actived').siblings().removeClass('list-actived');
+			$("#leftCol2-popular").show().siblings().hide();
+		}
 	});
 
 	// 本地音乐细分标签切换
@@ -529,7 +539,6 @@ $(document).ready(function() {
 	$("#leftCol2-songList, #leftCol2-singerList, #leftCol2-search-result").on('dblclick', '.list-row',function(event) {
 		event.preventDefault();
 		if($(this).parent('#SearchList').length > 0) {
-			C(123);
 			myAudio.setSrc($(this).attr('data-src'));
 		}else {
 			musicTagCurrentID = getIdFromTag($(this).attr('data-galleryid'), $(this).attr('data-fullpath'));
@@ -557,32 +566,40 @@ $(document).ready(function() {
 		myAudio.play();
 	});
 
-	$(this).on('keydown', function(event) {
+	$(document).on('keydown', function(event) {
 		// event.preventDefault();
-		// C(event.keyCode);
-		if(event.keyCode == 32) {
-			var tt = ".play-btn .play-pause a";
-			if($(".play-btn .play-pause").hasClass('pause')) {
-				$(tt).children().removeClass('icon-pause').addClass('icon-play');
-				$(tt).attr('title', '播放');
-				$(tt).parent().removeClass('pause').addClass('play');
-				myAudio.pause();	
-			}else {
-				$(tt).children().removeClass('icon-play').addClass('icon-pause');
-				$(tt).attr('title', '暂停');
-				$(tt).parent().removeClass('play').addClass('pause');
-				myAudio.play();
+		if(event.keyCode == 32) { // space
+			if(!$("input").is(':focus')) {
+				event.preventDefault();
+				var tt = ".play-btn .play-pause a";
+				if($(".play-btn .play-pause").hasClass('pause')) {
+					$(tt).children().removeClass('icon-pause').addClass('icon-play');
+					$(tt).attr('title', '播放');
+					$(tt).parent().removeClass('pause').addClass('play');
+					myAudio.pause();	
+				}else {
+					$(tt).children().removeClass('icon-play').addClass('icon-pause');
+					$(tt).attr('title', '暂停');
+					$(tt).parent().removeClass('play').addClass('pause');
+					myAudio.play();
+				}
 			}
-		// }else if(event.keyCode == 37) {
-			// var mode = parseInt($(".play-mode li a.selected").attr('data-mode'));
-			// localMusic.playPre(mode);
-		// }else if(event.keyCode == 39) {
-			// var mode = parseInt($(".play-mode li a.selected").attr('data-mode'));
-			// localMusic.playNext(mode);
-		}else if(event.keyCode == 38) {
+		}else if(event.keyCode == 37) { // 左箭头
+			if(!$("input").is(':focus')) {
+				var mode = parseInt($(".play-mode li a.selected").attr('data-mode'));
+				localMusic.playPre(mode);
+			}
+		}else if(event.keyCode == 39) { // 右箭头
+			if(!$("input").is(':focus')) {
+				var mode = parseInt($(".play-mode li a.selected").attr('data-mode'));
+				localMusic.playNext(mode);
+			}
+		}else if(event.keyCode == 38) { // 上箭头
+			event.preventDefault();
 			var vol = $(".vol-slider-range").css('width') === "0px" ? 0 : (parseInt($(".vol-slider-range").css('width')) / parseInt($(".vol-slider-wrapper").width()));
 			myAudio.setVolume(vol+0.1);
-		}else if(event.keyCode == 40) {
+		}else if(event.keyCode == 40) { // 下箭头
+			event.preventDefault();
 			var vol = $(".vol-slider-range").css('width') === "0px" ? 0 : (parseInt($(".vol-slider-range").css('width')) / parseInt($(".vol-slider-wrapper").width()));
 			myAudio.setVolume(vol-0.1);
 		}else if(event.keyCode == 27){ // Esc
@@ -729,7 +746,6 @@ $(document).ready(function() {
 	});
 
 	$("#menu ul").on('keyup', '#search input', function(event) {
-		event.preventDefault();
 		var keyword = $(this).val();
 		$.ajax({
 			url: 'http://song4u.sinaapp.com/api/search.php?keyword='+keyword,
@@ -743,8 +759,8 @@ $(document).ready(function() {
 				$("#onlineBody").show().siblings().hide();
 				$("#leftCol2 .leftbar-outer #search-result").addClass('list-actived').siblings().removeClass('list-actived');
 				$("#SearchList").empty();
+				if(!res.songs.length) return false;
 				res.songs.forEach(function(item, index, arr) {
-					// C(item);
 					addItem(index, item, "#SearchList");
 				});
 			},

@@ -706,7 +706,7 @@ header {
 	width: 0%;
 }
 
-.song-delete {
+.song-delete, .song-like {
 	position: absolute;
 	width: 51px;
 	height: 50px;
@@ -718,7 +718,7 @@ header {
 	color: #fff;
 	margin-left: -51px;
 }
-.song-restore, .song-play{
+.song-restore, .song-play {
 	position: absolute;
 	width: 51px;
 	height: 50px;
