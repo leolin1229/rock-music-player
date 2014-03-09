@@ -30,7 +30,7 @@
 		<section id="localBody">
 			<div class="column1 layout-bd" id="leftCol1">
 				<div class="leftbar-outer">
-					<div class="list list-actived" id="songList">
+					<div class="list list-active" id="songList">
 						<a class="list-btn" hidefocus="true"><i class="icon-list"><span class="split"></span>歌曲列表</i></a>
 					</div>
 					<div class="list" id="singerList">
@@ -109,7 +109,7 @@
 		<section id="onlineBody">
 			<div class="column2 layout-bd" id="leftCol2">
 				<div class="leftbar-outer">
-					<div class="list list-actived" id="popular">
+					<div class="list list-active" id="popular">
 						<a class="list-btn" hidefocus="true"><i class="icon-cardio"><span class="split"></span>音乐正流行</i></a>
 					</div>
 					<div class="list" id="fm">
@@ -126,7 +126,21 @@
 			<div class="tab-content column2">
 				<div id="leftCol2-popular"></div>
 				<div id="leftCol2-fm"></div>
-				<div id="leftCol2-mylike"></div>
+				<div id="leftCol2-mylike">
+					<div class="list-header">
+						<div class="list-header-column c0">
+							<span class="item">歌曲</span>
+						</div>
+						<div class="list-header-column c1">
+							<span class="item">歌手</span>
+						</div>
+						<div class="list-header-column c2">
+							<span class="item">专辑</span>
+						</div>
+					</div>
+					<div class="list-viewport" id="MyLikeList">
+					</div>
+				</div>
 				<div id="leftCol2-search-result" class="tab-content-child">
 					<div class="list-header">
 						<div class="list-header-column c0">

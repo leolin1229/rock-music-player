@@ -420,7 +420,7 @@ header {
 	border-bottom: 1px solid #c1c1c1;
 }
 
-.leftbar-outer .list-actived {
+.leftbar-outer .list-active {
 	background-color: #c1c1c1;
 }
 
@@ -733,5 +733,9 @@ header {
 }
 
 .list-row i {
-	font-size: 18px;
+	font-size: 17px;
+}
+
+.song-like-active {
+	color: red;
 }
