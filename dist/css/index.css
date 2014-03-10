@@ -288,6 +288,20 @@ header {
 	float: left;
 }
 
+.widget div {
+	margin: 0 10px;
+	float: left;
+	position: relative;
+	color: #fff;
+}
+
+.widget div a {
+	text-decoration: none;
+	color: #fff;
+	font-size: 13px;
+	line-height: 15px;
+}
+
 /*中部状态面板*/
 .main-panel .title-wrapper {
 	margin: 8px 0 3px 0;
@@ -412,7 +426,7 @@ header {
 }
 
 .leftbar-outer .list {
-	padding: 5px;
+	padding: 7px;
 	height: 40px;
 	position: relative;
 	overflow: hidden;
@@ -738,4 +752,57 @@ header {
 
 .song-like-active {
 	color: red;
+}
+
+#lrcWrapper {
+	position: absolute;
+	background-color: #000;
+	opacity: 0.8;
+	width: 280px;
+	height: 92%;
+	right: -302px;
+	margin: 1% 0;
+	padding: 10px;
+	border: 1px solid #ececec;
+	border-radius: 5px 0 0 5px;
+	z-index: 1000;
+	overflow: hidden;
+}
+
+#lrcWrapper::before {
+	content: " ";
+	display: block;
+	width: 280px;
+	height: 20%;
+	background: -webkit-gradient(linear,left top,left bottom,color-stop(0%,rgba(0,0,0,1)),color-stop(80%,rgba(0,0,0,0.8)),color-stop(100%,rgba(0,0,0,0.1)));
+	position: absolute;
+	top: 0;
+	z-index: 1001;
+}
+
+#lrcWrapper::after {
+	content: " ";
+	display: block;
+	width: 280px;
+	height: 20%;
+	background: -webkit-gradient(linear,left top,left bottom,color-stop(0%,rgba(0,0,0,0.1)),color-stop(20%,rgba(0,0,0,0.8)),color-stop(100%,rgba(0,0,0,1)));
+	position: absolute;
+	bottom: 0;
+	z-index: 1001;
+}
+
+.lrcContent p {
+	color: #fff;
+	text-align: center;
+	height: 40px;
+	line-height: 1.2;
+	margin: 0;
+	opacity: .5;
+	-webkit-transition: opacity .8s;
+	font-size: 14px;
+}
+
+.lrcContent .cur {
+	color: #00CD00;
+	font-size: 16px;
 }

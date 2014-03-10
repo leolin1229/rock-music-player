@@ -2,6 +2,12 @@
 
 var audio = {
 	audioEle: null,
+	lrcContent: $(".lrcContent"),
+	lrcStep: 0,
+	lrcData: null,
+	lrcStatus: false,
+	lrcLink: '',
+
 	formatTime: function(time) {
 		if (!isFinite(time) || time < 0) {
 			return "";
@@ -114,6 +120,27 @@ var audio = {
 		} catch (error) {console.log("音频缓冲错误：" + error);}
 		if(cur == dur) {
 			audio.onEnded();
+		}
+		if (!audio.lrcData || !audio.lrcStatus) {
+			return false;
+		}
+		var words = audio.lrcData.words,
+			times = audio.lrcData.times,
+			length = times.length,
+			i = audio.lrcStep,
+			lrcContent = audio.lrcContent,
+			curTime = cur * 1000 | 0;
+		for (; i < length; i++) {
+			var step = times[i];
+			if (curTime > step && curTime < times[i + 1]) {
+				var lrcTime = lrcContent.find('[data-lrctime="' + step + '"]');
+				var lrctop = lrcTime.attr("data-lrctop");
+				lrcContent.animate({
+					"margin-top": lrctop + "px"
+				}, 400).find("p.cur").removeClass("cur");
+				lrcTime.addClass("cur");
+				break;
+			}
 		}
 	}
 };

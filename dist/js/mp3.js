@@ -118,7 +118,7 @@ var Mp3 = {
     		'album' :'unknown',
     		'fullPath': 'unknown',
             'galleryId': 0,
-            'like': false
+            'lrc': null
     	};
     	if(result.slice(0, 3) == 'ID3')  {
     		info = {
@@ -128,7 +128,7 @@ var Mp3 = {
     			'album': getAlbum(result),
     			'fullPath': fullPath,
                 'galleryId': parseInt(galleryId),
-                'like': false
+                'lrc': null
     		};
     		return info;
     	}else {
