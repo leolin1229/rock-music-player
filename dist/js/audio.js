@@ -50,12 +50,14 @@ var audio = {
 	},
 	setSrc: function(src) {
 		this.audioEle.pause();
-		this.audioEle.src = null;
-		this.audioEle.src = src;
-		this.audioEle.autoplay = true;
-		$(".slider-range").css('width', '0%');
-		$(".slider-handle").css('width', '0%');
-		$(".icon-play").removeClass('icon-play').addClass('icon-pause');
+		setTimeout(function() {
+			audio.audioEle.src = null;
+			audio.audioEle.src = src;
+			audio.audioEle.autoplay = true;
+			$(".slider-range").css('width', '0%');
+			$(".slider-handle").css('width', '0%');
+			$(".icon-play").removeClass('icon-play').addClass('icon-pause');
+		}, 1000);
 	},
 	setVolume: function(vol) {
 		if(this.audioEle.duration) {
@@ -103,6 +105,7 @@ var audio = {
 	onPause: function() {},
 	onEnded: function() {
 		this.audioEle.currentTime = 0;
+		this.lrcLink = '';
 		if (typeof audio.onEndedHandle === "function") {
 			audio.onEndedHandle();
 		}
@@ -121,25 +124,24 @@ var audio = {
 		if(cur == dur) {
 			audio.onEnded();
 		}
-		if (!audio.lrcData || !audio.lrcStatus) {
-			return false;
-		}
-		var words = audio.lrcData.words,
+		if (audio.lrcData && audio.lrcStatus && audio.lrcLink != '') {
+			var words = audio.lrcData.words,
 			times = audio.lrcData.times,
 			length = times.length,
 			i = audio.lrcStep,
 			lrcContent = audio.lrcContent,
 			curTime = cur * 1000 | 0;
-		for (; i < length; i++) {
-			var step = times[i];
-			if (curTime > step && curTime < times[i + 1]) {
-				var lrcTime = lrcContent.find('[data-lrctime="' + step + '"]');
-				var lrctop = lrcTime.attr("data-lrctop");
-				lrcContent.animate({
-					"margin-top": lrctop + "px"
-				}, 400).find("p.cur").removeClass("cur");
-				lrcTime.addClass("cur");
-				break;
+			for (; i < length; i++) {
+				var step = times[i];
+				if (curTime > step && curTime < times[i + 1]) {
+					var lrcTime = lrcContent.find('[data-lrctime="' + step + '"]');
+					var lrctop = lrcTime.attr("data-lrctop");
+					lrcContent.animate({
+						"margin-top": lrctop + "px"
+					}, 400).find("p.cur").removeClass("cur");
+					lrcTime.addClass("cur");
+					break;
+				}
 			}
 		}
 	}

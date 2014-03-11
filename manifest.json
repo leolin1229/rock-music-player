@@ -8,7 +8,9 @@
     "storage",
     "http://song4u.sinaapp.com/*",
     "http://ting.baidu.com/*",
-    "http://zhangmenshiting.baidu.com/*"
+    "http://zhangmenshiting.baidu.com/*",
+    "http://geci.me/api/lyric/*",
+    "http://s.geci.me/lrc/*"
   ],
   "app": {
     "background": {

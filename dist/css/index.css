@@ -746,6 +746,12 @@ header {
 	border-right: 1px solid grey;
 }
 
+.song-play:hover, .song-restore:hover, .song-like:hover, .song-delete:hover {
+	background-color: #ffa100;
+	-webkit-transition: background-color 0.5s;
+}
+
+
 .list-row i {
 	font-size: 17px;
 }
@@ -759,10 +765,10 @@ header {
 	background-color: #000;
 	opacity: 0.8;
 	width: 280px;
-	height: 92%;
+	height: 96%;
 	right: -302px;
 	margin: 1% 0;
-	padding: 10px;
+	/*padding: 10px;*/
 	border: 1px solid #ececec;
 	border-radius: 5px 0 0 5px;
 	z-index: 1000;
@@ -803,6 +809,11 @@ header {
 }
 
 .lrcContent .cur {
-	color: #00CD00;
+	color: #00FF00;
+	font-weight: bold;
 	font-size: 16px;
+}
+
+.lrcContent {
+	margin-top: 250px;
 }
