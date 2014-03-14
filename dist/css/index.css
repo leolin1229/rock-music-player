@@ -817,3 +817,7 @@ header {
 .lrcContent {
 	margin-top: 250px;
 }
+
+#qrcode {
+	margin: 0 162px;
+}

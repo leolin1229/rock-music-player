@@ -272,6 +272,17 @@
 		</div>
 		<div class="layer-border"></div>
 	</div>
+	<!-- 二维码弹出层 -->
+	<div id="qrcodeLayer" class="layer">
+		<div class="layer-body">
+			<div class="layer-body-title"></div>
+			<div class="layer-body-content" id="qrcode"></div>
+			<div class="layer-body-footer">
+				<a class="cancel-btn" id="cancelBtn" hidefocus="true">确定</a>
+			</div>
+		</div>
+		<div class="layer-border"></div>
+	</div>
 	<!-- 扫描提示层 -->
 	<div class="scanTipsLayer">
 		<div class="scanTips">正在扫描：<span class="songname-tips"></span></div>
@@ -284,8 +295,9 @@
     <script type="text/javascript" src="dist/js/mp3.js"></script>
     <script type="text/javascript" src="dist/js/audio.js"></script>
     <script type="text/javascript" src="dist/js/jquery-drag.js"></script>
-      
+    <script type="text/javascript" src="dist/js/jquery.qrcode.js"></script>
     <script type="text/javascript" src="dist/js/jquery.indexeddb.js"></script>
+    <script type="text/javascript" src="dist/js/socket.io.js"></script>
 
     <script type="text/javascript" src="dist/js/index.js"></script>
 	

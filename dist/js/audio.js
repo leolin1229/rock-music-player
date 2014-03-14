@@ -50,14 +50,12 @@ var audio = {
 	},
 	setSrc: function(src) {
 		this.audioEle.pause();
-		setTimeout(function() {
-			audio.audioEle.src = null;
-			audio.audioEle.src = src;
-			audio.audioEle.autoplay = true;
-			$(".slider-range").css('width', '0%');
-			$(".slider-handle").css('width', '0%');
-			$(".icon-play").removeClass('icon-play').addClass('icon-pause');
-		}, 1000);
+		audio.audioEle.src = null;
+		audio.audioEle.src = src;
+		audio.audioEle.autoplay = true;
+		$(".slider-range").css('width', '0%');
+		$(".slider-handle").css('width', '0%');
+		$(".icon-play").removeClass('icon-play').addClass('icon-pause');
 	},
 	setVolume: function(vol) {
 		if(this.audioEle.duration) {

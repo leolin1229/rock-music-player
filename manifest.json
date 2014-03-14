@@ -10,7 +10,8 @@
     "http://ting.baidu.com/*",
     "http://zhangmenshiting.baidu.com/*",
     "http://geci.me/api/lyric/*",
-    "http://s.geci.me/lrc/*"
+    "http://s.geci.me/lrc/*",
+    "http://leolin.cc/*"
   ],
   "app": {
     "background": {
