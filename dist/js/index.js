@@ -13,9 +13,7 @@ $(document).ready(function() {
 	var recycleMusic = [],// 回收站歌曲
 		localMusicIndex = 0;// 本地音乐计数
 
-	// var onlineMusicTag = [],
-	// 	onlineMusicTagCurrentID = 0,
-	// 	onlineMusicIndex = 0;
+
 
 	var localMusic = {
 		array: [],
@@ -30,6 +28,131 @@ $(document).ready(function() {
 		len: 0
 	};
 
+	// 远程
+	var socket = null,
+		playerID = null,
+		webID = null;
+
+	var remote = {
+		// socket: null,
+		// playerID: null,
+		// webID: null,
+		playing: function(musicInfo) {
+			if(socket && playerID && webID) {
+				var data = {
+					type: 'playing',
+					playerID: playerID,
+					webID: webID,
+					musicInfo: musicInfo
+				}
+				socket.emit('control', data);
+			}
+		},
+		handle: function() {
+			if(!socket) {
+				// socket = io.connect('http://localhost:3000');
+				socket = io.connect('http://leolin.cc');
+				socket.on('connected', function(data) {
+					playerID = data.id;
+					$("#qrcodeLayer div.layer-body-title").empty();
+					$("#qrcodeLayer div.layer-body-title").html("<h3>请用手机扫二维码</h3>");
+
+					$("#qrcodeLayer div.layer-body-content").empty();
+					$("#qrcodeLayer div.layer-body-content").qrcode({width: 128,height: 128,text: "http://leolin.cc?playerID=" + playerID});
+					C("初始化：http://leolin.cc?playerID=" + playerID);
+
+					// $("#qrcodeLayer div.layer-body-content").qrcode({width: 128,height: 128,text: "http://localhost:3000?playerID=" + playerID});
+					// C("初始化：http://localhost:3000?playerID=" + playerID);
+				});
+				socket.on('doit', function(data) {
+					var type = data.type;
+					switch(type) {
+						case 'prev':
+							player.playPre();
+						break;
+
+						case 'next':
+							player.playNext();
+						break;
+
+						case 'playPause':
+							player.playPause();
+						break;
+
+						case 'conn_ok': 
+							webID = data.webID;
+							$("#qrcodeLayer div.layer-body-title").empty();
+							$("#qrcodeLayer div.layer-body-title").html("<h3>远程遥控配对成功！</h3>");
+							socket.emit("control", {
+								webID: webID,
+								playerID: playerID,
+								type: "volume",
+								volume: remote.volume.value
+							});
+							
+							$("#qrcodeLayer").hide();
+							$(".shade").hide();
+						break;
+
+						case 'conn_error':
+							$("#qrcodeLayer div.layer-body-title").empty();
+							$("#qrcodeLayer div.layer-body-title").html("<h3>远程遥控配对失败！</h3>");
+						break;
+
+						case 'volume':
+							var vol = data.volume;
+							remote.volume.value = vol;
+							myAudio.setVolume(vol);
+							if (vol == 0) {
+								myAudio.audioEle.muted = true;
+								remote.volume.muted = true;
+							} else {
+								myAudio.audioEle.muted = false;
+								remote.volume.muted = false;
+							}
+						break;
+					};
+				});
+			}else {
+				// 已生成二维码
+				$("#qrcodeLayer div.layer-body-title").empty();
+				$("#qrcodeLayer div.layer-body-title").html("<h3>请用手机扫二维码</h3>");
+
+				$("#qrcodeLayer div.layer-body-content").empty();
+				$("#qrcodeLayer div.layer-body-content").qrcode({width: 128,height: 128,text: "http://leolin.cc?playerID=" + remote.playerID});
+				C("非初始化：http://leolin.cc?playerID=" + playerID);
+
+				// $("#qrcodeLayer div.layer-body-content").qrcode({width: 128,height: 128,text: "http://localhost:3000?playerID=" + playerID});
+				// C("非初始化：http://localhost:3000?playerID=" + playerID);
+			}
+		},
+		volume: {
+			value: 1,
+			muted: myAudio.audioEle.muted,
+			change: function() {
+				myAudio.setVolume(this.value);
+				if(!this.value) {
+					myAudio.audioEle.muted = true;
+					this.muted = true;
+				}else {
+					myAudio.audioEle.muted = false;
+					this.muted = false;
+				}
+				clearTimeout(window.volumeTimer);
+				window.volumeTimer = setTimeout(function() {
+					if (socket) {
+						socket.emit('control', {
+							webID: webID,
+							payerID: playerID,
+							type: 'volume',
+							volume: remote.volume.value
+						});
+					}
+				}, 300);
+			}
+		}
+	}
+
 	myAudio.onEndedHandle = function() {
 		var mode = parseInt($(".play-mode li a.selected").attr('data-mode'));
 		switch(mode) {
@@ -40,7 +163,7 @@ $(document).ready(function() {
 				while((localMusic.currentID = parseInt(Math.random()*(localMusic.len-1)+0.5))==oldIndex);
 
 				if(localMusic.array[localMusic.currentID].lrcLink == '') {
-					getLrcLinkByAjax(localMusic.array[localMusic.currentID].title, localMusic.array[localMusic.currentID].artist);
+					getLrcLinkByAjax(localMusic.array[localMusic.currentID].songName, localMusic.array[localMusic.currentID].artistName);
 				}
 
 				myAudio.lrcLink = localMusic.array[localMusic.currentID].lrcLink;
@@ -79,7 +202,7 @@ $(document).ready(function() {
 				localMusic.currentID = ((localMusic.currentID+1) >= localMusic.len) ? 0 : (localMusic.currentID+1);
 
 				if(localMusic.array[localMusic.currentID].lrcLink == '') {
-					getLrcLinkByAjax(localMusic.array[localMusic.currentID].title, localMusic.array[localMusic.currentID].artist);
+					getLrcLinkByAjax(localMusic.array[localMusic.currentID].songName, localMusic.array[localMusic.currentID].artistName);
 				}
 
 				myAudio.lrcLink = localMusic.array[localMusic.currentID].lrcLink;
@@ -118,7 +241,7 @@ $(document).ready(function() {
 					while((localMusic.currentID = parseInt(Math.random()*(localMusic.len-1)+0.5))==oldIndex);
 
 					if(localMusic.array[localMusic.currentID].lrcLink == '') {
-						getLrcLinkByAjax(localMusic.array[localMusic.currentID].title, localMusic.array[localMusic.currentID].artist);
+						getLrcLinkByAjax(localMusic.array[localMusic.currentID].songName, localMusic.array[localMusic.currentID].artistName);
 					}
 
 					myAudio.lrcLink = localMusic.array[localMusic.currentID].lrcLink;
@@ -161,7 +284,7 @@ $(document).ready(function() {
 					localMusic.currentID = ((localMusic.currentID - 1) < 0) ? (localMusic.len - 1) : (localMusic.currentID - 1);
 					
 					if(localMusic.array[localMusic.currentID].lrcLink == '') {
-						getLrcLinkByAjax(localMusic.array[localMusic.currentID].title, localMusic.array[localMusic.currentID].artist);
+						getLrcLinkByAjax(localMusic.array[localMusic.currentID].songName, localMusic.array[localMusic.currentID].artistName);
 					}
 
 					myAudio.lrcLink = localMusic.array[localMusic.currentID].lrcLink;
@@ -198,7 +321,7 @@ $(document).ready(function() {
 					while((localMusic.currentID = parseInt(Math.random()*(localMusic.len-1)+0.5))==oldIndex);
 					
 					if(localMusic.array[localMusic.currentID].lrcLink == '') {
-						getLrcLinkByAjax(localMusic.array[localMusic.currentID].title, localMusic.array[localMusic.currentID].artist);
+						getLrcLinkByAjax(localMusic.array[localMusic.currentID].songName, localMusic.array[localMusic.currentID].artistName);
 					}
 
 					myAudio.lrcLink = localMusic.array[localMusic.currentID].lrcLink;
@@ -241,7 +364,7 @@ $(document).ready(function() {
 					localMusic.currentID = ((localMusic.currentID+1) >= localMusic.len) ? 0 : (localMusic.currentID+1);
 					
 					if(localMusic.array[localMusic.currentID].lrcLink == '') {
-						getLrcLinkByAjax(localMusic.array[localMusic.currentID].title, localMusic.array[localMusic.currentID].artist);
+						getLrcLinkByAjax(localMusic.array[localMusic.currentID].songName, localMusic.array[localMusic.currentID].artistname);
 					}
 
 					myAudio.lrcLink = localMusic.array[localMusic.currentID].lrcLink;
@@ -268,7 +391,6 @@ $(document).ready(function() {
 			}
 		},
 		playPause: function() {
-			C(myAudio.audioEle.paused);
 			if(myAudio.audioEle.paused) {
 				myAudio.play();	
 			}else {
@@ -313,7 +435,7 @@ $(document).ready(function() {
 		var target = arguments[1] ? arguments[1] : null;
 
 		$.ajax({
-			url: 'http://geci.me/api/lyric/' + musicInfo.title + '/' + musicInfo.artist,
+			url: 'http://geci.me/api/lyric/' + musicInfo.songName + '/' + musicInfo.artistName,
 			type: 'GET',
 			dataType: 'json',
 			success: function(res) {
@@ -413,29 +535,17 @@ $(document).ready(function() {
    		// col1
    		var childDiv0 = $("<div></div>");
    		childDiv0.addClass('list-cell c0');
-   		if(parentNode == "#SearchList" || parentNode == "#MyLikeList") {
-   			childDiv0.append('<span class="list-songname">' + item.songName + '</span>');
-   		}else {
-   			childDiv0.append('<span class="list-songname">' + item.title + '</span>');
-   		}
+   		childDiv0.append('<span class="list-songname">' + item.songName + '</span>');
    		parentDiv.append(childDiv0);
    		// col2
    		var childDiv1 = $("<div></div>");
    		childDiv1.addClass('list-cell c1');
-   		if(parentNode == "#SearchList" || parentNode == "#MyLikeList") {
-   			childDiv1.append('<span class="list-songname">' + item.artistName + '</span>');
-   		}else {
-   			childDiv1.append('<span class="list-songname">' + item.artist + '</span>');
-   		}
+   		childDiv1.append('<span class="list-songname">' + item.artistName + '</span>');
    		parentDiv.append(childDiv1);
    		// col3
    		var childDiv2 = $("<div></div>");
    		childDiv2.addClass('list-cell c2');
-   		if(parentNode == "#SearchList" || parentNode == "#MyLikeList") {
-   			childDiv2.append('<span class="list-songname">' + item.albumName + '</span>');
-   		}else {
-   			childDiv2.append('<span class="list-songname">' + item.album + '</span>');
-   		}
+   		childDiv2.append('<span class="list-songname">' + item.albumName + '</span>');
    		parentDiv.append(childDiv2);
    		// like
 		if(parentNode=="#SearchList") {
@@ -532,9 +642,9 @@ $(document).ready(function() {
 									tag: musicInfo.galleryId.toString()+","+musicInfo.fullPath.toString(),
 									id: parseInt(localMusicIndex)
 								});
-								if(localMusic.artist.indexOf(musicInfo.artist) == -1) {
-									localMusic.artist.push(musicInfo.artist.toString());
-									$(".singer-list").append('<div class="singer-list-row"><div class="singername"><span>'+musicInfo.artist.toString()+'</span></div></div>');
+								if(localMusic.artist.indexOf(musicInfo.artistName) == -1) {
+									localMusic.artist.push(musicInfo.artistName.toString());
+									$(".singer-list").append('<div class="singer-list-row"><div class="singername"><span>'+musicInfo.artistName.toString()+'</span></div></div>');
 								}
 							});
 						};
@@ -556,8 +666,8 @@ $(document).ready(function() {
 	function readFileAsPath(galleryId, fullPath) {
 		if(galleryId && fullPath) {
 			if(localMusic.currentID < 0) return ;
-			$(".title .artist").text(localMusic.array[localMusic.currentID].artist);
-			$(".title .songname").text(localMusic.array[localMusic.currentID].title);
+			$(".title .artist").text(localMusic.array[localMusic.currentID].artistName);
+			$(".title .songname").text(localMusic.array[localMusic.currentID].songName);
 			var gallery = mGalleryArray[galleryId - 1];
 			gallery.root.getFile(fullPath, {create: false}, function(fileEntry) {
 				fileEntry.file(function(file) {
@@ -950,8 +1060,8 @@ $(document).ready(function() {
 			remote.playing(musicInfo);
 		}else {// local
 			var musicInfo = {
-				title: $(this).children('div.list-cell.c0').text(),
-				artist: $(this).children('div.list-cell.c1').text(),
+				songName: $(this).children('div.list-cell.c0').text(),
+				artistName: $(this).children('div.list-cell.c1').text(),
 				galleryId: $(this).attr('data-galleryid'),
 				lrcLink: $(this).attr('data-lrc'),
 				fullPath: $(this).attr('data-fullpath')
@@ -1125,7 +1235,7 @@ $(document).ready(function() {
 				+'" data-galleryid="'+item.value.galleryId
 				+'"><div class="list-cell c0"><span class="list-songname">'+item.value.title
 				+'</span></div><div class="list-cell c1"><span class="list-songname">'
-				+item.value.album
+				+item.value.albumName
 				+'</span></div></div>');
 		}, singer).done(function(res, event) {});
 	});
@@ -1382,127 +1492,6 @@ $(document).ready(function() {
 		$(".lrcContent").html(str);
 		$(".lrcContent").css('margin-top', '280px');
 		$(".lrcContent").children(':first-child').addClass('cur');
-	}
-
-	var socket = null,
-		playerID = null,
-		webID = null;
-	var remote = {
-		playing: function(musicInfo) {
-			C("socket: "+socket);
-			C("playerID: "+playerID);
-			C("webID: "+webID);
-			if(socket && playerID && webID) {
-				var data = {
-					type: 'playing',
-					playerID: playerID,
-					webID: webID,
-					musicInfo: musicInfo
-				}
-				socket.emit('control', data);
-			}
-		},
-		handle: function() {
-			if(!socket) {
-				// socket = io.connect('http://localhost:3000');
-				socket = io.connect('http://leolin.cc/');
-				socket.on('ok', function(data) {
-					playerID = data.id;
-					$("#qrcodeLayer div.layer-body-title").empty();
-					$("#qrcodeLayer div.layer-body-title").html("<h3>请用手机扫二维码</h3>");
-
-					$("#qrcodeLayer div.layer-body-content").empty();
-					$("#qrcodeLayer div.layer-body-content").qrcode({width: 128,height: 128,text: "http://leolin.cc?playerID=" + playerID});
-
-					C("http://localhost:3000?playerID=" + playerID);
-				});
-				socket.on('doit', function(data) {
-					var type = data.type;
-					switch(type) {
-						case 'prev':
-							player.playPre();
-						break;
-
-						case 'next':
-							player.playNext();
-						break;
-
-						case 'playPause':
-							player.playPause();
-						break;
-
-						case 'conn_ok': 
-							webID = data.webID;
-							$("#qrcodeLayer div.layer-body-title").empty();
-							$("#qrcodeLayer div.layer-body-title").html("<h3>远程遥控配对成功！</h3>");
-							socket.emit("control", {
-								webID: webID,
-								playerID: playerID,
-								type: "volume",
-								volume: remote.volume.value
-							});
-							setTimeout(function() {
-								$("#qrcodeLayer").hide();
-								$(".shade").hide()
-							}, 500);
-						break;
-
-						case 'conn_error':
-							$("#qrcodeLayer div.layer-body-title").empty();
-							$("#qrcodeLayer div.layer-body-title").html("<h3>远程遥控配对失败！</h3>");
-						break;
-
-						case 'volume':
-							C("vol:"+data.volume);
-							// var vol = data.volume;
-							var vol = 1;
-							remote.volume.value = vol;
-							myAudio.setVolume(vol);
-							if (vol == 0) {
-								myAudio.audioEle.muted = true;
-								remote.volume.muted = true;
-							} else {
-								myAudio.audioEle.muted = false;
-								remote.volume.muted = false;
-							}
-						break;
-					};
-				});
-			}else {
-				// 已生成二维码
-				$("#qrcodeLayer div.layer-body-title").empty();
-				$("#qrcodeLayer div.layer-body-title").html("<h3>请用手机扫二维码</h3>");
-
-				$("#qrcodeLayer div.layer-body-content").empty();
-				$("#qrcodeLayer div.layer-body-content").qrcode({width: 128,height: 128,text: "http://localhost:3000?tid=" + playerID});
-				C("http://localhost:3000?playerID=" + playerID);
-			}
-		},
-		volume: {
-			value: 1,
-			muted: myAudio.audioEle.muted,
-			change: function() {
-				myAudio.setVolume(this.value);
-				if(!this.value) {
-					myAudio.audioEle.muted = true;
-					this.muted = true;
-				}else {
-					myAudio.audioEle.muted = false;
-					this.muted = false;
-				}
-				clearTimeout(window.volumeTimer);
-				window.volumeTimer = setTimeout(function() {
-					if (socket) {
-						socket.emit('control', {
-							webID: webID,
-							payerID: playerID,
-							type: 'volume',
-							volume: remote.volume.value
-						});
-					}
-				}, 300);
-			}
-		}
 	}
 
 	// debug

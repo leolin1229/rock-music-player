@@ -112,20 +112,20 @@ var Mp3 = {
 
     	// main
     	var info = {
-    		'artist' :'unknown',
-    		'title' :'unknown',
+    		'artistName' :'unknown',
+    		'songName' :'unknown',
     		'apic' :'unknown',
-    		'album' :'unknown',
+    		'albumName' :'unknown',
     		'fullPath': 'unknown',
             'galleryId': 0,
             'lrcLink': ''
     	};
     	if(result.slice(0, 3) == 'ID3')  {
     		info = {
-    			'artist': getArtist(result),
-    			'title': getTitle(result),
+    			'artistName': getArtist(result),
+    			'songName': getTitle(result),
     			'apic': getApic(result),
-    			'album': getAlbum(result),
+    			'albumName': getAlbum(result),
     			'fullPath': fullPath,
                 'galleryId': parseInt(galleryId),
                 'lrcLink': ''
