@@ -31,12 +31,10 @@ $(document).ready(function() {
 	// 远程
 	var socket = null,
 		playerID = null,
-		webID = null;
+		webID = null,
+		showLrc = false;
 
 	var remote = {
-		// socket: null,
-		// playerID: null,
-		// webID: null,
 		playing: function(musicInfo) {
 			if(socket && playerID && webID) {
 				var data = {
@@ -89,7 +87,15 @@ $(document).ready(function() {
 								type: "volume",
 								volume: remote.volume.value
 							});
-							
+							if(!myAudio.audioEle.paused) {
+								if(localMusic.currentID >= 0 && onlineMusic.currentID <= -1) {
+									var musicInfo = localMusic.array[localMusic.currentID];
+									remote.playing(musicInfo);
+								}else if(localMusic.currentID <= -1 && onlineMusic.currentID >= 0) {
+									var musicInfo = onlineMusic.array[onlineMusic.currentID];
+									remote.playing(musicInfo);
+								}
+							}
 							$("#qrcodeLayer").hide();
 							$(".shade").hide();
 						break;
@@ -111,9 +117,32 @@ $(document).ready(function() {
 								remote.volume.muted = false;
 							}
 						break;
+
+						case 'showLrc':
+						if(data.isOpen == '1') {
+							showLrc = true;
+							var width = '302px';
+							getLrcByAjax();
+							$("#lrcWrapper").css('display', 'block').animate({'right': '+='+width}, 'slow');
+							myAudio.lrcStatus = true;
+						}else {
+							showLrc = true;
+							var width = '302px';
+							$("#lrcWrapper").animate({'right': '-='+width}, 'slow', 'swing', function() {
+								$("#lrcWrapper .lrcContent").css('margin-top', '0').empty();
+							});
+							myAudio.lrcStatus = false;
+						}
+						break;
 					};
 				});
-			}else {
+				socket.on('disconnect',function() {
+					$(".scanTipsLayer").empty();
+					$(".scanTipsLayer").html("<h2 style='color: red;text-align: center;'>远程连接已断开</h2>").show(3000, function() {
+						$(this).hide(500);
+					});
+				});
+			}else if(playerID) {
 				// 已生成二维码
 				$("#qrcodeLayer div.layer-body-title").empty();
 				$("#qrcodeLayer div.layer-body-title").html("<h3>请用手机扫二维码</h3>");
@@ -153,6 +182,50 @@ $(document).ready(function() {
 		}
 	}
 
+	myAudio.onTimeUpdateHandle = function() {
+		var cur = myAudio.audioEle.currentTime,
+			dur = myAudio.audioEle.duration;
+		$(".slider-range").css('width', cur / dur * 100 + "%");
+		$(".slider-handle").css('left', cur / dur * parseInt($("#progressSlider").width()) + "px");
+		$(".current-time").text(myAudio.formatTime(cur));
+		try {
+			var buf = myAudio.audioEle.buffered.end(0);
+			$(".slider-buffer").css('width', buf / dur * 100 + '%');
+		} catch (error) {console.log("音频缓冲错误：" + error);}
+
+		if(showLrc && myAudio.lrcData && myAudio.lrcStatus && myAudio.lrcLink != '') {
+			var lrcWord = $("#lrcWrapper p.cur").html();
+			if(lrcWord && lrcWord != '') {
+				socket.emit('control', {type: 'lrc', lrcWord: lrcWord, webID: webID});
+			}
+		}else {
+			socket.emit('control', {type: 'lrc', lrcWord: "没有歌词哦～", webID: webID});
+		}
+
+		if(cur == dur) {
+			myAudio.onEnded();
+		}
+		if (myAudio.lrcData && myAudio.lrcStatus && myAudio.lrcLink != '') {
+			var words = myAudio.lrcData.words,
+			times = myAudio.lrcData.times,
+			length = times.length,
+			i = myAudio.lrcStep,
+			lrcContent = myAudio.lrcContent,
+			curTime = cur * 1000 | 0;
+			for (; i < length; i++) {
+				var step = times[i];
+				if (curTime > step && curTime < times[i + 1]) {
+					var lrcTime = lrcContent.find('[data-lrctime="' + step + '"]');
+					var lrctop = lrcTime.attr("data-lrctop");
+					lrcContent.animate({
+						"margin-top": lrctop + "px"
+					}, 400).find("p.cur").removeClass("cur");
+					lrcTime.addClass("cur");
+					break;
+				}
+			}
+		}
+	}
 	myAudio.onEndedHandle = function() {
 		var mode = parseInt($(".play-mode li a.selected").attr('data-mode'));
 		switch(mode) {
@@ -420,7 +493,6 @@ $(document).ready(function() {
 			statusCode: {
 				404: function() {
 					$(".lrcContent").html("<p>没有结果哦！！</p>");
-
 				}
 			},
 			error: function(error) {
@@ -1378,7 +1450,7 @@ $(document).ready(function() {
 		var width = '302px';
 		if(myAudio.lrcStatus) {
 			$("#lrcWrapper").animate({'right': '-='+width}, 'slow', 'swing', function() {
-				$("#lrcWrapper .lrcContent").empty();
+				$("#lrcWrapper .lrcContent").css('margin-top', '0').empty();
 			});
 			myAudio.lrcStatus = false;
 		}else {
@@ -1419,8 +1491,6 @@ $(document).ready(function() {
 	}
 
 	function parseLrc(lrc) {
-		$("#lrcWrapper .lrcContent").empty();
-
 		var e = lrc.split(/[\r\n]/),
 		g = e.length,
 		j = {},
@@ -1466,6 +1536,7 @@ $(document).ready(function() {
 		};
 	}
 	function renderLrc(m) {
+		$("#lrcWrapper .lrcContent").empty();
 		myAudio.lrcData = m;
 		var words = m.words,
 			times = m.times,

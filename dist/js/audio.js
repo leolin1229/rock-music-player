@@ -110,39 +110,43 @@ var audio = {
 	},
 	onEndedHandle: function() {},
 	onTimeUpdate: function() {
-		var cur = this.currentTime,
-			dur = this.duration;
-		$(".slider-range").css('width', cur / dur * 100 + "%");
-		$(".slider-handle").css('left', cur / dur * parseInt($("#progressSlider").width()) + "px");
-		$(".current-time").text(audio.formatTime(cur));
-		try {
-			var buf = this.buffered.end(0);
-			$(".slider-buffer").css('width', buf / dur * 100 + '%');
-		} catch (error) {console.log("音频缓冲错误：" + error);}
-		if(cur == dur) {
-			audio.onEnded();
+		if(typeof audio.onTimeUpdateHandle === 'function') {
+			audio.onTimeUpdateHandle();
 		}
-		if (audio.lrcData && audio.lrcStatus && audio.lrcLink != '') {
-			var words = audio.lrcData.words,
-			times = audio.lrcData.times,
-			length = times.length,
-			i = audio.lrcStep,
-			lrcContent = audio.lrcContent,
-			curTime = cur * 1000 | 0;
-			for (; i < length; i++) {
-				var step = times[i];
-				if (curTime > step && curTime < times[i + 1]) {
-					var lrcTime = lrcContent.find('[data-lrctime="' + step + '"]');
-					var lrctop = lrcTime.attr("data-lrctop");
-					lrcContent.animate({
-						"margin-top": lrctop + "px"
-					}, 400).find("p.cur").removeClass("cur");
-					lrcTime.addClass("cur");
-					break;
-				}
-			}
-		}
-	}
+		// var cur = this.currentTime,
+		// 	dur = this.duration;
+		// $(".slider-range").css('width', cur / dur * 100 + "%");
+		// $(".slider-handle").css('left', cur / dur * parseInt($("#progressSlider").width()) + "px");
+		// $(".current-time").text(audio.formatTime(cur));
+		// try {
+		// 	var buf = this.buffered.end(0);
+		// 	$(".slider-buffer").css('width', buf / dur * 100 + '%');
+		// } catch (error) {console.log("音频缓冲错误：" + error);}
+		// if(cur == dur) {
+		// 	audio.onEnded();
+		// }
+		// if (audio.lrcData && audio.lrcStatus && audio.lrcLink != '') {
+		// 	var words = audio.lrcData.words,
+		// 	times = audio.lrcData.times,
+		// 	length = times.length,
+		// 	i = audio.lrcStep,
+		// 	lrcContent = audio.lrcContent,
+		// 	curTime = cur * 1000 | 0;
+		// 	for (; i < length; i++) {
+		// 		var step = times[i];
+		// 		if (curTime > step && curTime < times[i + 1]) {
+		// 			var lrcTime = lrcContent.find('[data-lrctime="' + step + '"]');
+		// 			var lrctop = lrcTime.attr("data-lrctop");
+		// 			lrcContent.animate({
+		// 				"margin-top": lrctop + "px"
+		// 			}, 400).find("p.cur").removeClass("cur");
+		// 			lrcTime.addClass("cur");
+		// 			break;
+		// 		}
+		// 	}
+		// }
+	},
+	onTimeUpdateHandle: function() {}
 };
 function C(str) {
 	console.log(str);
