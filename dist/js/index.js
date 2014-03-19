@@ -193,13 +193,15 @@ $(document).ready(function() {
 			$(".slider-buffer").css('width', buf / dur * 100 + '%');
 		} catch (error) {console.log("音频缓冲错误：" + error);}
 
-		if(showLrc && myAudio.lrcData && myAudio.lrcStatus && myAudio.lrcLink != '') {
-			var lrcWord = $("#lrcWrapper p.cur").html();
-			if(lrcWord && lrcWord != '') {
-				socket.emit('control', {type: 'lrc', lrcWord: lrcWord, webID: webID});
+		if(socket && webID && playerID) {
+			if(showLrc!=false && myAudio.lrcData && myAudio.lrcStatus && myAudio.lrcLink != '') {
+				var lrcWord = $("#lrcWrapper p.cur").html();
+				if(lrcWord && lrcWord != '') {
+					socket.emit('control', {type: 'lrc', lrcWord: lrcWord, webID: webID});
+				}
+			}else {
+				socket.emit('control', {type: 'lrc', lrcWord: "没有歌词哦～", webID: webID});
 			}
-		}else {
-			socket.emit('control', {type: 'lrc', lrcWord: "没有歌词哦～", webID: webID});
 		}
 
 		if(cur == dur) {
@@ -464,10 +466,33 @@ $(document).ready(function() {
 			}
 		},
 		playPause: function() {
-			if(myAudio.audioEle.paused) {
-				myAudio.play();	
+			if(localMusic.currentID <= -1 && onlineMusic.currentID <= -1) {
+				if(localMusic.len > 0) {
+					localMusic.currentID = 0;
+
+					if(localMusic.array[localMusic.currentID].lrcLink == '') {
+						getLrcLinkByAjax(localMusic.array[localMusic.currentID].songName, localMusic.array[localMusic.currentID].artistname);
+					}
+
+					myAudio.lrcLink = localMusic.array[localMusic.currentID].lrcLink;
+					readFileAsPath(localMusic.array[localMusic.currentID].galleryId, localMusic.array[localMusic.currentID].fullPath);
+
+					remote.playing(localMusic.array[localMusic.currentID]);
+				}else if(onlineMusic.len > 0) {
+					onlineMusic.currentID = 0;
+					myAudio.setSrc(onlineMusic.array[onlineMusic.currentID].songLink);
+					myAudio.lrcLink = onlineMusic.array[onlineMusic.currentID].lrcLink;
+					$(".title .artist").text(onlineMusic.array[onlineMusic.currentID].artistName);
+					$(".title .songname").text(onlineMusic.array[onlineMusic.currentID].songName);
+
+					remote.playing(onlineMusic.array[onlineMusic.currentID]);
+				}
 			}else {
-				myAudio.pause();
+				if(myAudio.audioEle.paused) {
+					myAudio.play();	
+				}else {
+					myAudio.pause();
+				}
 			}
 		}
 	}
@@ -1112,6 +1137,10 @@ $(document).ready(function() {
 		myAudio.lrcLink = '';
 		// online
 		if($(this).parent('#SearchList').length > 0 || $(this).parent('#MyLikeList').length > 0) {
+			var tt = ".play-btn .play-pause a";
+			$(tt).children().removeClass('icon-play').addClass('icon-pause');
+			$(tt).attr('title', '暂停');
+			$(tt).parent().removeClass('play').addClass('pause');
 			myAudio.setSrc($(this).attr('data-src'));
 			myAudio.lrcLink = $(this).attr('data-lrc');
 			var musicInfo = {
@@ -1131,6 +1160,10 @@ $(document).ready(function() {
 			// 远程
 			remote.playing(musicInfo);
 		}else {// local
+			var tt = ".play-btn .play-pause a";
+			$(tt).children().removeClass('icon-play').addClass('icon-pause');
+			$(tt).attr('title', '暂停');
+			$(tt).parent().removeClass('play').addClass('pause');
 			var musicInfo = {
 				songName: $(this).children('div.list-cell.c0').text(),
 				artistName: $(this).children('div.list-cell.c1').text(),
@@ -1177,7 +1210,6 @@ $(document).ready(function() {
 	});
 
 	$(document).on('keydown', function(event) {
-		// event.preventDefault();
 		if(event.keyCode == 32) { // space
 			if(!$("input").is(':focus')) {
 				event.preventDefault();
@@ -1188,10 +1220,17 @@ $(document).ready(function() {
 					$(tt).parent().removeClass('pause').addClass('play');
 					myAudio.pause();	
 				}else {
-					$(tt).children().removeClass('icon-play').addClass('icon-pause');
-					$(tt).attr('title', '暂停');
-					$(tt).parent().removeClass('play').addClass('pause');
-					myAudio.play();
+					if(localMusic.currentID <= -1 && onlineMusic.currentID <= -1) {
+						$(tt).children().removeClass('icon-play').addClass('icon-pause');
+						$(tt).attr('title', '暂停');
+						$(tt).parent().removeClass('play').addClass('pause');
+						player.playPause();
+					}else {
+						$(tt).children().removeClass('icon-play').addClass('icon-pause');
+						$(tt).attr('title', '暂停');
+						$(tt).parent().removeClass('play').addClass('pause');
+						myAudio.play();
+					}
 				}
 			}
 		}else if(event.keyCode == 37) { // 左箭头
@@ -1448,15 +1487,25 @@ $(document).ready(function() {
 	$(".widget").on('click', '.lrc', function(event) {
 		event.preventDefault();
 		var width = '302px';
+		// 关闭歌词
 		if(myAudio.lrcStatus) {
 			$("#lrcWrapper").animate({'right': '-='+width}, 'slow', 'swing', function() {
 				$("#lrcWrapper .lrcContent").css('margin-top', '0').empty();
 			});
 			myAudio.lrcStatus = false;
+			if(webID && playerID && socket) {
+				socket.emit('control', {type: 'showLrc', playerID: playerID, webID: webID, isOpen: '0'});
+				showLrc = false;
+			}
 		}else {
+			// 开启歌词
 			getLrcByAjax();
 			$("#lrcWrapper").css('display', 'block').animate({'right': '+='+width}, 'slow');
 			myAudio.lrcStatus = true;
+			if(webID && playerID && socket) {
+				socket.emit('control', {type: 'showLrc', webID: webID, isOpen: '1'});
+				showLrc = true;
+			}
 		}
 	});
 
