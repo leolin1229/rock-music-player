@@ -650,17 +650,22 @@ $(document).ready(function() {
 			childLike.addClass('song-like');
 			childLike.append('<span class="like"><i class="icon-heart"></i></span>')
    			parentDiv.append(childLike);
-		}else {
+		}else if(parentNode != '#catMusicList'){
 			var childDelete = $("<div></div>");
 			childDelete.addClass('song-delete');
 			childDelete.append('<span class="delete"><i class="icon-remove-2"></i></span>')
    			parentDiv.append(childDelete);	
 		}
    		// 
-   		if(parentNode == "#GalleryList" || parentNode=="#SearchList" || parentNode=="#MyLikeList") {
+   		if(parentNode=="#SearchList" || parentNode=="#MyLikeList") {
    			var childPlay = $("<div></div>");
-			childPlay.addClass('song-play');
+			childPlay.addClass('song-add');
 			childPlay.append('<span class="play"><i class="icon-play"></i></span>')
+   			parentDiv.append(childPlay);
+   		}else if(parentNode == "#GalleryList") {
+   			var childPlay = $("<div></div>");
+			childPlay.addClass('song-cat');
+			childPlay.append('<span class="play"><i class="icon-hospital"></i></span>')
    			parentDiv.append(childPlay);
    		}
    		if(parentNode == "#RecycleList") {
@@ -798,12 +803,12 @@ $(document).ready(function() {
 				cnt++;
 			}).done(function() {
 				// 遍历完成后回调函数
-				if(obj.artist.length) {
-					// 遍历歌手
-					obj.artist.forEach(function(item, index, arr) {
-						$(".singer-list").append('<div class="singer-list-row"><div class="singername"><span>'+item+'</span></div></div>');
-					});
-				}
+				// if(obj.artist.length) {
+				// 	// 遍历歌手
+				// 	obj.artist.forEach(function(item, index, arr) {
+				// 		$(".singer-list").append('<div class="singer-list-row"><div class="singername"><span>'+item+'</span></div></div>');
+				// 	});
+				// }
 				obj.len = cnt;
 			});
 		}else if(category == "onlineMusic") {
@@ -845,13 +850,13 @@ $(document).ready(function() {
 			mGalleryArray = results;
 			mGalleryIndex = 0;
 
-			$("#openFileLayer.layer-body-content").html(str);
+			$("#openFileLayer .layer-body-content").html(str);
 			$(".scan-btn").click(function(event) {
 			 	return false;
 			});
 		}else {
 			var str = "<span>没有任何音频文件夹哦～</span>";
-			$("#openFileLayer.layer-body-content").html(str);
+			$("#openFileLayer .layer-body-content").html(str);
 		}
 	}
 
@@ -947,9 +952,9 @@ $(document).ready(function() {
 					var objStore = tran.createObjectStore("musicList", {
 						autoIncrement: true
 					});
-					objStore.createIndex("artist");
-					objStore.createIndex("album");
-					objStore.createIndex("title");
+					objStore.createIndex("artistName");
+					objStore.createIndex("albumName");
+					objStore.createIndex("songName");
 					objStore.createIndex("galleryId");
 				}
 			}
@@ -985,6 +990,21 @@ $(document).ready(function() {
 				}
 			}
 		}).done(function() {});
+	}
+
+	// 本地歌曲类别数据库初始化
+	function categoryDbInit() {
+		$.indexedDB("categoryDB", {
+			version: 1,
+			schema: {
+				"1": function(tran) {
+					var objStore = tran.createObjectStore("categoryList", {
+						autoIncrement: true
+					});
+					objStore.createIndex("id");
+				}
+			}
+		});
 	}
 
 	function getLocalMusicID(obj) {
@@ -1035,6 +1055,7 @@ $(document).ready(function() {
 			}
 		});
 	}
+
 	///////////////////////////// app初始化开始 /////////////////////////////
 	var init = function() {
 		$("#local").addClass('menu-active');
@@ -1051,6 +1072,7 @@ $(document).ready(function() {
 		// $.indexedDB("localMusicDB").deleteDatabase();
 		// $.indexedDB("onlineMusicDB").deleteDatabase();
 		// $.indexedDB("recycleMusicDB").deleteDatabase();
+		// $.indexedDB("categoryDB").deleteDatabase();
 		// 本地歌曲数据库
 		localDbInit();
 		$.indexedDB("localMusicDB").objectStore("musicList").count().done(function(res, event) {
@@ -1078,6 +1100,13 @@ $(document).ready(function() {
 				addItemList(recycleMusic, "recycleMusic");
 			}
 		});
+		// 歌曲类别数据库
+		categoryDbInit();
+		$.indexedDB("categoryDB").objectStore("categoryList").each(function(item) {
+			$("#toggle ul").append(
+				"<li data-catid="+item.value.id+"><p class='cat-list-name'>"+item.value.name+"</p><input type='text' class='edit-name' id='editName_"+item.value.id+"' value='"+item.value.name+"' style='display: none;'><div class='edit-icons' style='display: none;'><a hidefocus='true' class='edit-change'><i class='icon-edit'></i></a><a hidefocus='true' class='edit-delete'><i class='icon-remove-2'></i></a></div></li>"
+			);
+		}).done();
 	}();
 
 	// 本地音乐和在线音乐标签切换
@@ -1093,14 +1122,233 @@ $(document).ready(function() {
 
 	// 本地音乐细分标签切换
 	$(".leftbar-outer > div").click(function(event) {
-		$(this).addClass('list-active').siblings().removeClass('list-active');
 		var tabID = $(this).attr('id');
-		$("#leftCol2-"+tabID).show().siblings().hide();
-		if(tabID == "recycleList") {
-			$("#RecycleList").empty();
-			addItem2Recycle();
+		if(tabID == 'toggle') return false;
+		$(this).addClass('list-active').siblings().removeClass('list-active');
+		if(tabID == 'allSong') {
+			$("#toggle").slideToggle(400);
+		}else {
+			$("#leftCol2-"+tabID).show().siblings().hide();
+			if(tabID == "recycleList") {
+				$("#RecycleList").empty();
+				addItem2Recycle();
+			}
 		}
 	});
+
+	$("#toggle").on('click', 'li', function(event) {
+		event.preventDefault();
+		var listID = $(this).attr('id');
+		$(".leftbar-outer > div#allSong").addClass('list-active').siblings().removeClass('list-active');
+		$("#leftCol2-"+listID).show().siblings().hide();
+	});
+
+	$("#toggle").on('mouseenter', 'li', function(event) {
+		event.preventDefault();
+		$(this).children('.edit-icons').show();
+	});
+
+	$("#toggle").on('mouseleave', 'li', function(event) {
+		event.preventDefault();
+		$(this).children('.edit-icons').hide();
+	});
+
+	$("#addCat").on('click', 'p', function(event) {
+		event.preventDefault();
+		$(this).hide();
+		$("#addCat input").show().focus();
+	});
+
+	// “新建歌单”失去焦点
+	$("#addCat input").blur(function(event) {
+		$(this).hide();
+		$("#addCat p").show();
+	});
+
+	$("#addCat input").on('keydown', function(event) {
+		var keyCode = event.keyCode;
+		switch(keyCode) {
+			case 27: // Esc
+				$("#addCat input").hide();
+				$("#addCat p").show();
+				$("#addCat input").val('我的歌单');
+			break;
+
+			case 13: // Enter
+				var val = $.trim($("#addCat input").val());
+				if(val && val != '') {
+					var catID = getRandomString(6);
+					$.indexedDB("categoryDB").objectStore("categoryList").add({id: catID, name: val}).done(function() {
+						$("#toggle ul").append(
+							"<li data-catid="+catID+"><p class='cat-list-name'>"+val+"</p><input type='text' class='edit-name' id='editName_"+catID+"' value='"+val+"' style='display: none;'><div class='edit-icons' style='display: none;'><a hidefocus='true' class='edit-change'><i class='icon-edit'></i></a><a hidefocus='true' class='edit-delete'><i class='icon-remove-2'></i></a></div></li>"
+						);
+						$("#addCat input").hide();
+						$("#addCat p").show();
+						$("#addCat input").val('我的歌单');
+					});
+				}
+			break;
+		};
+	});
+
+	// 点击修改
+	$("#toggle").on('click', '.edit-change', function(event) {
+		event.preventDefault();
+		var _this = $(this);
+		_this.parent().siblings('.cat-list-name').css('display', 'none');
+		_this.parent().siblings('.edit-name').css('display', 'block');
+	});
+
+	// 当前焦点input修改
+	$("#toggleList").on('focus', 'li input', function(event) {
+		event.preventDefault();
+		var id = $(this).attr('id');
+		$("#toggleList").on('keydown', "#"+id, function(e) {
+			var keyCode = e.keyCode,
+				catID = id.slice(9);// 获取类别id
+			var _this = $(this);
+			switch(keyCode){
+				case 27:// Esc
+					_this.hide();
+					_this.siblings('p').show();
+				break;
+
+				case 13:// Enter
+					var val = $.trim($(this).val());
+					if(val && val != '') {
+						var key = null;
+						$.indexedDB("categoryDB").objectStore("categoryList").each(function(item) {
+							if(item.value.id == catID) {
+								key = item.key;
+								return false;
+							}
+						}).done(function() {
+							if(key) {
+								$.indexedDB("categoryDB").objectStore("categoryList").put({id: catID, name: val}, key).done(function() {
+									_this.attr('value', val).hide();
+									_this.siblings('p').text(val).show();
+								});
+							}
+						});
+					}
+				break;
+			};
+		});
+	});
+
+	// 当前焦点input失去焦点
+	$("#toggleList").on('blur', 'li input', function(event) {
+		event.preventDefault();
+		$(this).hide();
+		$(this).siblings('p').show();
+	});
+
+	// 点击添加类别
+	$("#GalleryList").on('click', '.song-cat', function(event) {
+		event.preventDefault();
+		var top = $(this).offset().top+10,
+			left = $(this).offset().left+25,
+			maxHeight = $(document).height()*0.4,
+			_this = $(this).parent('div');
+		var dom = $("#catPop ul"),
+			cnt = 0;
+			dom.empty();
+		$.indexedDB("categoryDB").objectStore("categoryList").each(function(item) {
+			cnt++;
+			dom.append('<li id="catList_'+item.value.id+'"><a hidefocus="true">'+item.value.name+'</a></li>');
+		}).done(function() {
+			if(cnt > 0) {
+				var h = cnt*31 >= maxHeight ? maxHeight : cnt*31;
+				var fullPath = _this.attr('data-fullpath'),
+					galleryId = _this.attr('data-galleryid');
+				dom.attr({
+					'data-fullpath': fullPath,
+					'data-galleryid': galleryId
+				});
+				if(top + h >= $(document).height()) {
+					$("#catPop").css({
+						'top': top-h+"px",
+						'left': left+"px"
+					}).show();
+				}else {
+					$("#catPop").css({
+						'top': top+"px",
+						'left': left+"px"
+					}).show();
+				}
+			}
+		});
+	});
+
+	// 类别列表弹出
+	$("#catPop").on('click', 'ul li', function(event) {
+		event.preventDefault();
+		var catID = $(this).attr('id').slice(8),
+			galleryId = $(this).parent('ul').attr('data-galleryid'),
+			fullPath = $(this).parent('ul').attr('data-fullpath');
+		var key = null,
+			musicInfo = null;
+		$.indexedDB("localMusicDB").objectStore("musicList").each(function(item) {
+			if(item.value.galleryId == galleryId && item.value.fullPath == fullPath) {
+				key = item.key;
+				musicInfo = item.value;
+				return false;
+			}
+		}).done(function() {
+			if(key && musicInfo) {
+				musicInfo.catID = catID;
+				$.indexedDB("localMusicDB").objectStore("musicList").put(musicInfo, key).done(function() {
+					$("#catPop").hide();
+					$("#catPop ul").empty();
+				});
+			}
+		});
+	});
+
+	// 删除类别
+	$("#toggle").on('click', '.edit-delete', function(event) {
+		event.preventDefault();
+		var _this = $(this);
+		var catID = _this.parent().parent('li').attr('data-catid'),
+			idx = null;
+		$.indexedDB("categoryDB").objectStore("categoryList").each(function(item) {
+			if(item.value.id == catID) {
+				idx = item.key;
+				return false;
+			}
+		}).done(function() {
+			if(idx) {
+				$.indexedDB("categoryDB").objectStore("categoryList").delete(idx).done(function() {
+					// TODO:这里还要删除该类别的歌曲
+					_this.parent().parent('li').remove();
+				});
+			}
+		});
+	});
+
+	// 显示该类别歌曲
+	$("#toggleList").on('click', 'li', function(event) {
+		event.preventDefault();
+		var catID = $(this).attr('data-catid'),
+			cnt = 0;
+		if($(this).attr('id') == 'songList') {
+			$("#leftCol2-songList").show().siblings().hide();
+		}else {
+			$("#catMusicList").empty();
+			$.indexedDB("localMusicDB").objectStore("musicList").each(function(item) {
+				if(item.value.catID == catID) {
+					addItem(cnt, item.value, "#catMusicList");
+					cnt++;
+				}
+			}).done(function() {
+				if(!cnt) {
+					$("#catMusicList").html('<h3>没有歌曲哦～</h3>')
+				}
+				$("#leftCol2-cat").show().siblings().hide();
+			});
+		}
+	});
+
 
 	// 打开文件点击事件
 	$("#openFile").click(function(event) {
@@ -1132,7 +1380,7 @@ $(document).ready(function() {
 		$(".layer").hide();
 	});
 
-	$("#leftCol2-songList, #leftCol2-singerList, #leftCol2-search-result, #leftCol2-mylike").on('dblclick', '.list-row',function(event) {
+	$("#leftCol2-songList, #leftCol2-singerList, #leftCol2-search-result, #leftCol2-mylike, #catMusicList").on('dblclick', '.list-row',function(event) {
 		event.preventDefault();
 		myAudio.lrcLink = '';
 		// online
@@ -1251,6 +1499,10 @@ $(document).ready(function() {
 			myAudio.setVolume(vol-0.1);
 		}else if(event.keyCode == 27){ // Esc
 			event.preventDefault();
+			if($("#catPop").css('display') == 'block') {
+				$("#catPop").hide();
+				$("#catPop ul").empty();
+			}
 			// if(chrome.app.window.current().isFullscreen()) {
 			// 	$(".widget .fullscreen .ctrl-btn").attr('title', '全屏');
 			// 	chrome.app.window.current().restore();
@@ -1519,6 +1771,7 @@ $(document).ready(function() {
 		remote.handle();
 	});
 
+	// 比较localMusic对象
 	function cmpLocalMusicObj(obj1, obj2) {
 		if(obj1.fullPath == obj2.fullPath && obj1.galleryId == obj2.galleryId) {
 			return true;
@@ -1526,6 +1779,7 @@ $(document).ready(function() {
 			return false;
 		}
 	}
+
 	// 比较onlineMusic对象
 	function cmpOnlineMusicObj(obj1, obj2) {
 		if(obj1.songName == obj2.songName 
@@ -1588,15 +1842,15 @@ $(document).ready(function() {
 		$("#lrcWrapper .lrcContent").empty();
 		myAudio.lrcData = m;
 		var words = m.words,
-			times = m.times,
-			data = m.data,
-			b = 40;
+		times = m.times,
+		data = m.data,
+		b = 40;
 
 		var timeLength = times.length,
-			i = 0,
-			str = "",
-			top = parseInt($("#lrcWrapper").height()/2),
-			e = null;
+		i = 0,
+		str = "",
+		top = parseInt($("#lrcWrapper").height()/2),
+		e = null;
 		if (times.length == 0) {
 			return;
 		}
@@ -1614,6 +1868,16 @@ $(document).ready(function() {
 		$(".lrcContent").children(':first-child').addClass('cur');
 	}
 
+	function getRandomString(len) {
+		var str = '0123456789qwertyuioplkjhgfdsazxcvbnm';
+		var result = '';
+		var strLength = str.length;
+		for(var i = 0; i < len; i++) {
+			var stringLength = Math.random() * strLength;
+			result += str.charAt(Math.ceil(stringLength) % str.length);
+		}
+		return result;
+	}
 	// debug
 	function C(str) {
 		console.log(str);

@@ -417,21 +417,26 @@ header {
 	width: 18.9%;
 	border-right: 1px solid #c1c1c1;
 	left: 0;
+	overflow-y: auto;
 }
 
 .leftbar-outer {
-	overflow-y: auto;
+	/* overflow: scroll; */
 	position: absolute;
 	width: 100%;
+	margin-top: 1px;
+	border-top: 1px solid #c1c1c1;
+	border-bottom: 1px solid #c1c1c1;
 }
 
 .leftbar-outer .list {
 	padding: 7px;
-	height: 40px;
+	min-height: 40px;
 	position: relative;
 	overflow: hidden;
 	cursor: pointer;
 	border-bottom: 1px solid #c1c1c1;
+	border-top: 1px solid #c1c1c1;
 }
 
 .leftbar-outer .list-active {
@@ -732,7 +737,7 @@ header {
 	color: #fff;
 	margin-left: -51px;
 }
-.song-restore, .song-play {
+.song-restore, .song-cat, .song-add {
 	position: absolute;
 	width: 51px;
 	height: 50px;
@@ -746,7 +751,7 @@ header {
 	border-right: 1px solid grey;
 }
 
-.song-play:hover, .song-restore:hover, .song-like:hover, .song-delete:hover {
+.song-cat:hover, .song-restore:hover, .song-like:hover, .song-delete:hover, .song-add:hover {
 	background-color: #ffa100;
 	-webkit-transition: background-color 0.5s;
 }
@@ -820,4 +825,135 @@ header {
 
 #qrcode {
 	margin: 0 162px;
+}
+
+#toggle {
+	padding: 0;
+	border: 0;
+	margin-bottom: 5px;
+}
+
+#toggle ul {
+	margin: 0;
+	padding: 0;
+}
+
+#toggle ul li {
+	padding: 2px 0;
+	height: 28px;
+	line-height: 21px;
+	list-style: none;
+	position: relative;
+	overflow: hidden;
+	cursor: pointer;
+}
+
+#toggle ul li .edit-icons {
+	display: block;
+	position: absolute;
+	top: 0;
+	right: 3px;
+	line-height: 32px;
+}
+
+#toggle ul li .edit-icons a {
+	margin: 0 3px;
+	z-index: 10001;
+}
+
+#toggle ul li input {
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 5px;
+	border: 1px solid #c2c2c2;
+	height: 30px;
+	line-height: 21px;
+}
+
+#toggle ul li p {
+	font-size: 16px;
+	display: block;
+	padding: 5px 55px;
+	float: left;
+	/*border-bottom: 1px solid #c1c1c1;*/
+}
+
+#toggle ul li:hover {
+	background-color: rgba(0, 0, 0, 0.2);
+}
+
+#addCat {
+	margin: 5px 55px;
+}
+
+#addCat p {
+	border: 1px solid #cececf;
+	border-radius: 4px;
+	width: 53px;
+	height: 20px;
+	line-height: 20px;
+	color: #333;
+	margin: 0;
+}
+
+#addCat p span {
+	padding: 5px;
+	font-weight: bold;
+	font-size: 16px;
+	color: #999;
+}
+
+#addCat input {
+	display: block;
+	border: 1px solid #c2c2c2;
+	height: 20px;
+	width: 105px;
+}
+
+#catPop {
+	position: absolute;
+	font-size: 12px;
+	border: 1px solid #dcdcdc;
+	border-radius: 3px;
+	background-color: #fff;
+	min-width: 220px;
+	max-width: 400px;
+	max-height: 40%;
+	overflow-x: hidden;
+	overflow-y: auto;
+	outline: none;
+}
+
+#catPop ul {
+	padding: 0;
+	outline: none;
+	list-style: none;
+	margin: 2px;
+	display: block;
+}
+
+#catPop ul li {
+	border-top: 0 none;
+	margin: 0;
+	padding: 0;
+	zoom: 1;
+	width: 100%;
+}
+
+#catPop ul li a {
+	color: #333;
+	padding: 0 22px;
+	line-height: 31px;
+	white-space: nowrap;
+	text-decoration: none;
+	display: block;
+	zoom: 1;
+	font-weight: normal;
+	cursor: pointer;
+}
+
+#catPop ul li a:hover {
+	background-color: #ffa100;
+	color: #fff;
 }

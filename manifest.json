@@ -4,6 +4,7 @@
   "version": "2",
   "permissions": [
     "fileSystem" ,
+    "storage",
     {"mediaGalleries": ["read", "allAutoDetected"] }, 
     "storage",
     "http://song4u.sinaapp.com/*",
