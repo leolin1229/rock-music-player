@@ -206,11 +206,12 @@ header {
 
 .play-mode li {
 	float: left;
-	margin: 0 3px;
+	padding: 0 4px;
+	/* width: 18px; */
 }
 
 .play-mode li a {
-	width: 14px;
+	width: 16px;
 	height: 14px;
 }
 
@@ -999,4 +1000,9 @@ header {
 	0%,20%,50%,80%,100% { -webkit-transform: translateY(0px); }
   	40% { -webkit-transform: translateY(-10px); }
   	60% { -webkit-transform: translateY(-5px); }
+}
+
+#progressSlider a, #volSlider a {
+	color: rgb(11, 159, 216);
+	font-size: 15px;
 }

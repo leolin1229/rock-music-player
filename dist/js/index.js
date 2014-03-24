@@ -2020,3 +2020,4 @@ $(document).ready(function() {
 
 // http://song4u.sinaapp.com/api/search.php?keyword=
 // http://ting.baidu.com/
+// 音质64，128，320
