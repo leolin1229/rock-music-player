@@ -13,7 +13,9 @@
     "http://geci.me/api/lyric/*",
     "http://s.geci.me/lrc/*",
     "http://leolin.cc/*",
-    "http://rockmusicplayer-jsjs.rhcloud.com/*"
+    "http://rockmusicplayer-jsjs.rhcloud.com/*",
+    "http://fm.baidu.com/dev/api/*",
+    "http://music.baidu.com/data/music/*"
   ],
   "app": {
     "background": {

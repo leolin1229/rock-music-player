@@ -34,6 +34,13 @@ $(document).ready(function() {
 		webID = null,
 		showLrc = false;
 
+	// FM
+	var FM = {
+		songList: [],
+		curFm: '',
+		currentID: -1
+	}
+
 	var remote = {
 		playing: function(musicInfo) {
 			if(socket && playerID && webID) {
@@ -228,6 +235,7 @@ $(document).ready(function() {
 			}
 		}
 	}
+
 	myAudio.onEndedHandle = function() {
 		var mode = parseInt($(".play-mode li a.selected").attr('data-mode'));
 		switch(mode) {
@@ -265,12 +273,21 @@ $(document).ready(function() {
 				}else {
 					C("不存在歌曲！");
 				}
+			}else if(FM.currentID >= 0) {
+				FM.currentID++;
+				if(FM.currentID > 9) {
+					getFmByAjax(FM.curFm);
+				}else {
+					player.playOnlineMusic(FM.songList[FM.currentID], 'fm');
+				}
 			}
 			break;
+
 			case 1: 
 			myAudio.setLoop();
 			myAudio.play();
 			break;
+
 			case 2: 
 			// local
 			if(localMusic.currentID >= 0 && onlineMusic.currentID <= -1) {
@@ -297,6 +314,13 @@ $(document).ready(function() {
 
 				// 远程
 				remote.playing(onlineMusic.array[onlineMusic.currentID]);
+			}else if(FM.currentID >= 0) {
+				FM.currentID++;
+				if(FM.currentID > 9) {
+					getFmByAjax(FM.curFm);
+				}else {
+					player.playOnlineMusic(FM.songList[FM.currentID], 'fm');
+				}
 			}
 			break;
 			default: break;
@@ -305,8 +329,11 @@ $(document).ready(function() {
 			getLrcByAjax();
 		}
 	};
+
 	var player = {
+
 		mode: parseInt($(".play-mode li a.selected").attr('data-mode')),
+
 		playPre: function() {
 			switch(this.mode) {
 				case 0: 
@@ -341,6 +368,13 @@ $(document).ready(function() {
 						remote.playing(onlineMusic.array[onlineMusic.currentID]);
 					}else {
 						C("不存在歌曲！");
+					}
+				}else if(FM.currentID >= 0) {
+					FM.currentID++;
+					if(FM.currentID > 9) {
+						getFmByAjax(FM.curFm);
+					}else {
+						player.playOnlineMusic(FM.songList[FM.currentID], 'fm');
 					}
 				}
 				break;
@@ -378,6 +412,13 @@ $(document).ready(function() {
 
 					// 远程
 					remote.playing(onlineMusic.array[onlineMusic.currentID]);
+				}else if(FM.currentID >= 0) {
+					FM.currentID++;
+					if(FM.currentID > 9) {
+						getFmByAjax(FM.curFm);
+					}else {
+						player.playOnlineMusic(FM.songList[FM.currentID], 'fm');
+					}
 				}
 				break;
 				default: break;
@@ -422,6 +463,13 @@ $(document).ready(function() {
 					}else {
 						C("不存在歌曲！");
 					}
+				}else if(FM.currentID >= 0) {
+					FM.currentID++;
+					if(FM.currentID > 9) {
+						getFmByAjax(FM.curFm);
+					}else {
+						player.playOnlineMusic(FM.songList[FM.currentID], 'fm');
+					}
 				}
 				break;
 
@@ -457,6 +505,15 @@ $(document).ready(function() {
 
 					// 远程
 					remote.playing(onlineMusic.array[onlineMusic.currentID]);
+				}else if(FM.currentID >= 0) {
+					FM.currentID++;
+					if(FM.currentID > 9) {
+						FM.currentID = 0;
+						getFmByAjax(FM.curFm);
+					}else {
+						player.playOnlineMusic(FM.songList[FM.currentID], 'fm');
+					}
+					remote.playing(FM.songList[FM.currentID]);
 				}
 				break;
 				default: break;
@@ -466,7 +523,7 @@ $(document).ready(function() {
 			}
 		},
 		playPause: function() {
-			if(localMusic.currentID <= -1 && onlineMusic.currentID <= -1) {
+			if(localMusic.currentID <= -1 && onlineMusic.currentID <= -1 && FM.currentID <= -1) {
 				if(localMusic.len > 0) {
 					localMusic.currentID = 0;
 
@@ -494,6 +551,20 @@ $(document).ready(function() {
 					myAudio.pause();
 				}
 			}
+		},
+		playOnlineMusic: function(obj) {
+			var tt = "#leftPanel .play-btn .play-pause a";
+			$(tt).children().removeClass('icon-play').addClass('icon-pause');
+			$(tt).attr('title', '暂停');
+			$(tt).parent().removeClass('play').addClass('pause');
+
+			myAudio.setSrc(obj.songLink);
+			myAudio.lrcLink = obj.lrcLink;
+
+			$("#playTitle .title .songname").text(obj.songName);
+			$("#playTitle .title .artist").text(obj.artistName);
+			localMusic.currentID = -1
+			onlineMusic.currentID = -1;
 		}
 	}
 
@@ -1382,15 +1453,18 @@ $(document).ready(function() {
 
 	$("#leftCol2-songList, #leftCol2-singerList, #leftCol2-search-result, #leftCol2-mylike, #catMusicList").on('dblclick', '.list-row',function(event) {
 		event.preventDefault();
+		if($('#fm-playing').length > 0){
+			$("#fm-playing").remove();
+		}
 		myAudio.lrcLink = '';
 		// online
 		if($(this).parent('#SearchList').length > 0 || $(this).parent('#MyLikeList').length > 0) {
-			var tt = ".play-btn .play-pause a";
-			$(tt).children().removeClass('icon-play').addClass('icon-pause');
-			$(tt).attr('title', '暂停');
-			$(tt).parent().removeClass('play').addClass('pause');
-			myAudio.setSrc($(this).attr('data-src'));
-			myAudio.lrcLink = $(this).attr('data-lrc');
+			player.playOnlineMusic({
+				songLink: $(this).attr('data-src'),
+				lrcLink: $(this).attr('data-lrc'),
+				songName: $(':nth-child(1) .list-songname', this).text(),
+				artistName: $(':nth-child(2) .list-songname', this).text()
+			});
 			var musicInfo = {
 				songName: $(this).children('div.list-cell.c0').text(),
 				artistName: $(this).children('div.list-cell.c1').text(),
@@ -1436,9 +1510,9 @@ $(document).ready(function() {
 
 			// 远程
 			remote.playing(musicInfo);
+			$(".title .songname").text($(':nth-child(1) .list-songname', this).text());
+			$(".title .artist").text($(':nth-child(2) .list-songname', this).text());
 		}
-		$(".title .songname").text($(':nth-child(1) .list-songname', this).text());
-		$(".title .artist").text($(':nth-child(2) .list-songname', this).text());
 	});
 
 	$("ul").on('click', '.pause .ctrl-btn', function(event) {
@@ -1793,6 +1867,7 @@ $(document).ready(function() {
 		}
 	}
 
+	// 解析歌词
 	function parseLrc(lrc) {
 		var e = lrc.split(/[\r\n]/),
 		g = e.length,
@@ -1838,6 +1913,8 @@ $(document).ready(function() {
 			data: l
 		};
 	}
+
+	// 生成歌词
 	function renderLrc(m) {
 		$("#lrcWrapper .lrcContent").empty();
 		myAudio.lrcData = m;
@@ -1877,6 +1954,63 @@ $(document).ready(function() {
 			result += str.charAt(Math.ceil(stringLength) % str.length);
 		}
 		return result;
+	}
+
+	$("#leftCol2-fm").on('dblclick', '.other-list-row', function(event) {
+		event.preventDefault();
+		FM.curFm = $(this).attr('data-link');
+		if($('#fm-playing').length <= 0 && $(this).children('span:first-child').attr('id') != 'fm-playing') {
+			$(this).prepend('<span id="fm-playing"><i class="icon-note"></i></span>');
+		}else if($('#fm-playing').length > 0){
+			$("#fm-playing").remove();
+			$(this).prepend('<span id="fm-playing"><i class="icon-note"></i></span>');
+		}
+		getFmByAjax(FM.curFm);
+	});
+	
+	function getFmByAjax(link) {
+		var arr = [];
+		$.ajax({
+			url: link+"&xx="+new Date().getTime(),
+			type: 'GET',
+			dataType: 'json',
+			success: function(res) {
+				var len = (res.list.length >= 10) ? 10 : res.list.length;
+				for (var i = 0; i < len; i++) {
+					arr.push(res.list[i].id);
+				};
+				if(arr.length) {
+					getFmSongsByAjax(arr);
+				}
+			},
+			statusCode: {
+				404: function() {C("404啊")}
+			},
+			error: function(error) {}
+		});
+	}
+
+	function getFmSongsByAjax(arr) {
+		$.ajax({
+			url: "http://music.baidu.com/data/music/fmlink?rate=128&songIds="+arr.join()+"&xx="+new Date().getTime(),
+			type: 'GET',
+			dataType: 'json',
+			success: function(res) {
+				FM.songList = [];
+				var len = res.data.songList.length;
+				for (var i = 0; i < len; i++) {
+					FM.songList.push(res.data.songList[i]);
+					if(FM.songList[i].lrcLink) FM.songList[i].lrcLink = "http://ting.baidu.com" + FM.songList[i].lrcLink;
+				};
+				FM.currentID = 0;
+				// 播放
+				player.playOnlineMusic(FM.songList[0]);
+			},
+			statusCode: {
+				404: function() {C("404啊")}
+			},
+			error: function(error) {C(error);}
+		});
 	}
 	// debug
 	function C(str) {
