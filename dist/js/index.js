@@ -1717,28 +1717,55 @@ $(document).ready(function() {
 	});
 
 	// 搜索框
-	$("#menu ul").on('keyup', '#search input', function(event) {
-		var keyword = $(this).val();
-		$.ajax({
-			url: 'http://song4u.sinaapp.com/api/search.php?keyword='+keyword,
-			type: 'GET',
-			dataType: 'json',
-			success: function(res) {
-				$("#menu ul #online").addClass('menu-active').siblings().removeClass('menu-active');
-				$("#leftCol2 .leftbar-outer #search-result").addClass('list-active').siblings().removeClass('list-active');
-				$("#SearchList").empty();
-				$("#onlineBody").show().siblings().hide();
-				$("#leftCol2-search-result").show().siblings().hide();
-				if(!res.songs.length) return false;
-				res.songs.forEach(function(item, index, arr) {
-					if(item.lrcLink) item.lrcLink = 'http://ting.baidu.com'+item.lrcLink;
-					addItem(index, item, "#SearchList");
+	$("#search").on('focus', '#searchInput', function(event) {
+		var _this = $(this);
+		$("#searchInput").on('keydown', _this, function(e) {
+			if(e.keyCode == 13) {
+				var keyword = $.trim(_this.val());
+				C(keyword);
+				$.ajax({
+					url: 'http://mp3.baidu.com/dev/api/?tn=getinfo&ct=0&ie=utf-8&format=json&word='+keyword,
+					type: 'GET',
+					dataType: 'json',
+					beforeSend: function() {
+						$("#online").addClass('menu-active').siblings().removeClass('menu-active');
+						$("#search-result").addClass('list-active').siblings().removeClass('list-active');
+						$("#SearchList").html('<h3>正在搜索～</h3>');
+						$("#onlineBody").show().siblings().hide();
+						$("#leftCol2-search-result").show().siblings().hide();
+					},
+					success: function(res) {
+						if(!res.length) {
+							$("#SearchList").html('<h3>没有结果哦～</h3>');
+						}else {
+							C(res);
+							$("#SearchList").empty();
+							res.forEach(function(item, index, arr) {
+								getOnlineMusicByAjax(0, item.song_id);
+							});
+						}
+					},
+					error: function(error) {}
 				});
-			},
-			error: function(error) {}
+			}
 		});
 	});
 
+	function getOnlineMusicByAjax(index, songID) {
+		$.ajax({
+			url: 'http://music.baidu.com/data/music/fmlink?rate=64&songIds=' + songID,
+			type: 'GET',
+			dataType: 'json',
+			success: function(res) {
+				// C(res);
+				var item = res.data.songList[0];
+				// C(res.data.songList[0]);
+				if(item.lrcLink) item.lrcLink = 'http://ting.baidu.com'+item.lrcLink;
+				addItem(index, item, "#SearchList");
+			},
+			error: function(error) {}
+		});
+	}
 	// 在线歌曲添加/删除红心
 	$(".list-viewport").on('click', '.song-like', function(event) {
 		event.preventDefault();

@@ -15,7 +15,8 @@
     "http://leolin.cc/*",
     "http://rockmusicplayer-jsjs.rhcloud.com/*",
     "http://fm.baidu.com/dev/api/*",
-    "http://music.baidu.com/data/music/*"
+    "http://music.baidu.com/data/music/*",
+    "http://mp3.baidu.com/dev/api/*"
   ],
   "app": {
     "background": {
