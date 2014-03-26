@@ -53,6 +53,11 @@ var audio = {
 		$(".slider-range").css('width', '0%');
 		$(".slider-handle").css('width', '0%');
 		$(".icon-play").removeClass('icon-play').addClass('icon-pause');
+		if(src && src.match("baidu.com") && $(".download").length <= 0) {
+			$(".widget").prepend('<div class="download"><a class="ctrl-btn" hidefocus="true" title="下载"><i class="icon-download-alt"></i></a></div>');
+		}else if(src && !src.match("baidu.com") && $(".download").length > 0){
+			$(".download").remove();
+		}
 		audio.audioEle.src = null;
 		audio.audioEle.src = src;
 		audio.audioEle.autoplay = true;

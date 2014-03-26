@@ -2107,6 +2107,84 @@ $(document).ready(function() {
 		}
 	}
 
+	var offlineFs;
+
+	var reqQuota = 1024 * 1024 * 1024;// 1GB
+	var fileEntry;
+	var dir = "offline";
+	window.StorageInfo = window.navigator.webkitPersistentStorage || window.StorageInfo || window.webkitStorageInfo;
+	window.StorageInfo.queryUsageAndQuota(function(used, remaining) { // successCallback
+		if (reqQuota > remaining) {
+			reqQuota = remaining / 3;
+		}
+		var total = Number((reqQuota / 1024 / 1024).toFixed(2));
+		// C(reqQuota+"!!!");
+		window.webkitRequestFileSystem(PERSISTENT, reqQuota, function(fs) {
+			offlineFs = fs;
+			fs.root.getDirectory(dir, {create: true}, function(entry) {
+				fileEntry = entry;
+			});
+		}, errorHandler);
+	}, errorHandler);
+
+	var offlineMusic = {
+		writeFile: function(fileName, U, callback) {
+			offlineFs.root.getFile(dir + "/" + fileName, {create: true}, function(fileEntry) {
+				fileEntry.createWriter(function(fileWriter) {
+					fileWriter.onwriteend = function(Y) {
+						console.log("Write completed.");
+						callback();
+					};
+					fileWriter.onerror = function(Y) {
+						console.log("Write failed: " + Y.toString());
+					};
+					fileWriter.write(U);
+				});
+			});
+		},
+		remove: function(fileName, callback) {
+			offlineFs.root.getFile(dir + "/" + fileName, {
+				create: false
+			}, function(fileEntry) {
+				fileEntry.remove(function() {
+					callback();
+				});
+			});
+		},
+		readFileAsUrl: function(fileName, callback) {
+			offlineFs.root.getFile(dir + "/" + fileName, {}, function(fileEntry) {
+				fileEntry.file(function(file) {
+					var W = window.webkitURL.createObjectURL(file);
+					callback(null, W);
+				});
+			});
+		},
+		wipe: function(callback) {
+			fileEntry.removeRecursively(function() {
+				callback();
+			});
+		}
+	};
+
+	var downloadHandler = function(url, musicInfo, index) {
+		var fullPath = musicInfo.fullPath;
+	};
+
+	$(".widget").on('click', '.download', function(event) {
+		event.preventDefault();
+		var url = myAudio.getSrc();
+		var musicInfo = {};
+		if(url) {
+			if(FM.currentID >= 0 && onlineMusic.currentID < 0) {
+				musicInfo = FM.songList[FM.currentID];
+			}else if(FM.currentID < 0 && onlineMusic.currentID >= 0) {
+				musicInfo = onlineMusic.array[onlineMusic.currentID];
+			}
+			C(musicInfo);
+		}
+
+	});
+
 	// debug
 	function C(str) {
 		console.log(str);
