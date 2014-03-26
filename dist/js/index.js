@@ -41,6 +41,11 @@ $(document).ready(function() {
 		currentID: -1
 	}
 
+	var Setting = {
+		FMrate: '128',
+		notify: false
+	}
+
 	var remote = {
 		playing: function(musicInfo) {
 			if(socket && playerID && webID) {
@@ -280,6 +285,7 @@ $(document).ready(function() {
 				}else {
 					player.playOnlineMusic(FM.songList[FM.currentID], 'fm');
 				}
+				remote.playing(FM.songList[FM.currentID]);
 			}
 			break;
 
@@ -321,6 +327,7 @@ $(document).ready(function() {
 				}else {
 					player.playOnlineMusic(FM.songList[FM.currentID], 'fm');
 				}
+				remote.playing(FM.songList[FM.currentID]);
 			}
 			break;
 			default: break;
@@ -349,6 +356,7 @@ $(document).ready(function() {
 					myAudio.lrcLink = localMusic.array[localMusic.currentID].lrcLink;
 					readFileAsPath(localMusic.array[localMusic.currentID].galleryId, localMusic.array[localMusic.currentID].fullPath);
 					
+					notify(localMusic.array[localMusic.currentID]);
 					// 远程
 					remote.playing(localMusic.array[localMusic.currentID]);
 				}else if(localMusic.currentID <= -1 && onlineMusic.currentID >= 0) {
@@ -364,6 +372,7 @@ $(document).ready(function() {
 						$(".title .artist").text(onlineMusic.array[onlineMusic.currentID].artistName);
 						$(".title .songname").text(onlineMusic.array[onlineMusic.currentID].songName);
 						
+						notify(onlineMusic.array[onlineMusic.currentID]);
 						// 远程
 						remote.playing(onlineMusic.array[onlineMusic.currentID]);
 					}else {
@@ -376,6 +385,7 @@ $(document).ready(function() {
 					}else {
 						player.playOnlineMusic(FM.songList[FM.currentID], 'fm');
 					}
+					remote.playing(FM.songList[FM.currentID]);
 				}
 				break;
 				
@@ -399,6 +409,7 @@ $(document).ready(function() {
 					myAudio.lrcLink = localMusic.array[localMusic.currentID].lrcLink;
 					readFileAsPath(localMusic.array[localMusic.currentID].galleryId, localMusic.array[localMusic.currentID].fullPath);
 
+					notify(localMusic.array[localMusic.currentID]);
 					// 远程
 					remote.playing(localMusic.array[localMusic.currentID]);
 				}else if(localMusic.currentID <= -1 && onlineMusic.currentID >= 0) {
@@ -410,6 +421,7 @@ $(document).ready(function() {
 					$(".title .artist").text(onlineMusic.array[onlineMusic.currentID].artistName);
 					$(".title .songname").text(onlineMusic.array[onlineMusic.currentID].songName);
 
+					notify(onlineMusic.array[onlineMusic.currentID]);
 					// 远程
 					remote.playing(onlineMusic.array[onlineMusic.currentID]);
 				}else if(FM.currentID >= 0) {
@@ -419,6 +431,7 @@ $(document).ready(function() {
 					}else {
 						player.playOnlineMusic(FM.songList[FM.currentID], 'fm');
 					}
+					remote.playing(FM.songList[FM.currentID]);
 				}
 				break;
 				default: break;
@@ -443,6 +456,7 @@ $(document).ready(function() {
 					myAudio.lrcLink = localMusic.array[localMusic.currentID].lrcLink;
 					readFileAsPath(localMusic.array[localMusic.currentID].galleryId, localMusic.array[localMusic.currentID].fullPath);
 
+					notify(localMusic.array[localMusic.currentID]);
 					// 远程
 					remote.playing(localMusic.array[localMusic.currentID]);
 				}else if(localMusic.currentID <= -1 && onlineMusic.currentID >= 0) {
@@ -458,6 +472,7 @@ $(document).ready(function() {
 						$(".title .artist").text(onlineMusic.array[onlineMusic.currentID].artistName);
 						$(".title .songname").text(onlineMusic.array[onlineMusic.currentID].songName);
 
+						notify(onlineMusic.array[onlineMusic.currentID]);
 						// 远程
 						remote.playing(onlineMusic.array[onlineMusic.currentID]);
 					}else {
@@ -470,6 +485,7 @@ $(document).ready(function() {
 					}else {
 						player.playOnlineMusic(FM.songList[FM.currentID], 'fm');
 					}
+					remote.playing(FM.songList[FM.currentID]);
 				}
 				break;
 
@@ -493,6 +509,7 @@ $(document).ready(function() {
 					myAudio.lrcLink = localMusic.array[localMusic.currentID].lrcLink;
 					readFileAsPath(localMusic.array[localMusic.currentID].galleryId, localMusic.array[localMusic.currentID].fullPath);
 
+					notify(localMusic.array[localMusic.currentID]);
 					// 远程
 					remote.playing(localMusic.array[localMusic.currentID]);
 				}else if(localMusic.currentID <= -1 && onlineMusic.currentID >= 0) {
@@ -503,6 +520,7 @@ $(document).ready(function() {
 					$(".title .artist").text(onlineMusic.array[onlineMusic.currentID].artistName);
 					$(".title .songname").text(onlineMusic.array[onlineMusic.currentID].songName);
 
+					notify(onlineMusic.array[onlineMusic.currentID]);
 					// 远程
 					remote.playing(onlineMusic.array[onlineMusic.currentID]);
 				}else if(FM.currentID >= 0) {
@@ -565,6 +583,8 @@ $(document).ready(function() {
 			$("#playTitle .title .artist").text(obj.artistName);
 			localMusic.currentID = -1
 			onlineMusic.currentID = -1;
+			notify(obj);
+			remote.playing(obj);
 		}
 	}
 
@@ -695,6 +715,7 @@ $(document).ready(function() {
 
 		if(parentNode == "#SearchList" || parentNode == "#MyLikeList") {
 			parentDiv.attr('data-src', item.songLink);
+			parentDiv.attr('data-albumname', item.albumName);
 		}else {
 			// local,recycle
 			parentDiv.attr('data-fullpath', item.fullPath);
@@ -1463,7 +1484,8 @@ $(document).ready(function() {
 				songLink: $(this).attr('data-src'),
 				lrcLink: $(this).attr('data-lrc'),
 				songName: $(':nth-child(1) .list-songname', this).text(),
-				artistName: $(':nth-child(2) .list-songname', this).text()
+				artistName: $(':nth-child(2) .list-songname', this).text(),
+				albumName: $(this).attr('data-albumname')
 			});
 			var musicInfo = {
 				songName: $(this).children('div.list-cell.c0').text(),
@@ -1722,7 +1744,6 @@ $(document).ready(function() {
 		$("#searchInput").on('keydown', _this, function(e) {
 			if(e.keyCode == 13) {
 				var keyword = $.trim(_this.val());
-				C(keyword);
 				$.ajax({
 					url: 'http://mp3.baidu.com/dev/api/?tn=getinfo&ct=0&ie=utf-8&format=json&word='+keyword,
 					type: 'GET',
@@ -1738,7 +1759,6 @@ $(document).ready(function() {
 						if(!res.length) {
 							$("#SearchList").html('<h3>没有结果哦～</h3>');
 						}else {
-							C(res);
 							$("#SearchList").empty();
 							res.forEach(function(item, index, arr) {
 								getOnlineMusicByAjax(0, item.song_id);
@@ -1759,7 +1779,6 @@ $(document).ready(function() {
 			success: function(res) {
 				// C(res);
 				var item = res.data.songList[0];
-				// C(res.data.songList[0]);
 				if(item.lrcLink) item.lrcLink = 'http://ting.baidu.com'+item.lrcLink;
 				addItem(index, item, "#SearchList");
 			},
@@ -1946,15 +1965,15 @@ $(document).ready(function() {
 		$("#lrcWrapper .lrcContent").empty();
 		myAudio.lrcData = m;
 		var words = m.words,
-		times = m.times,
-		data = m.data,
-		b = 40;
+			times = m.times,
+			data = m.data,
+			b = 40;
 
 		var timeLength = times.length,
-		i = 0,
-		str = "",
-		top = parseInt($("#lrcWrapper").height()/2),
-		e = null;
+			i = 0,
+			str = "",
+			top = parseInt($("#lrcWrapper").height()/2),
+			e = null;
 		if (times.length == 0) {
 			return;
 		}
@@ -1992,10 +2011,12 @@ $(document).ready(function() {
 			$("#fm-playing").remove();
 			$(this).prepend('<span id="fm-playing"><i class="icon-note"></i></span>');
 		}
+		FM.currentID = 0;
 		getFmByAjax(FM.curFm);
 	});
 	
 	function getFmByAjax(link) {
+		if(FM.currentID < 0) return ;
 		var arr = [];
 		$.ajax({
 			url: link+"&xx="+new Date().getTime(),
@@ -2019,7 +2040,7 @@ $(document).ready(function() {
 
 	function getFmSongsByAjax(arr) {
 		$.ajax({
-			url: "http://music.baidu.com/data/music/fmlink?rate=128&songIds="+arr.join()+"&xx="+new Date().getTime(),
+			url: "http://music.baidu.com/data/music/fmlink?rate="+Setting.FMrate+"&songIds="+arr.join()+"&xx="+new Date().getTime(),
 			type: 'GET',
 			dataType: 'json',
 			success: function(res) {
@@ -2039,6 +2060,53 @@ $(document).ready(function() {
 			error: function(error) {C(error);}
 		});
 	}
+
+
+	$("#menu").on('click', '#setting', function(event) {
+		event.preventDefault();
+		$("#settingLayer").show('slow');
+		$(".shade").show();
+	});
+
+	$("#settingLayer").on('click', '.ok-btn', function(event) {
+		event.preventDefault();
+		if($("#settingNotify").is(':checked')) {
+			Setting.notify = true;
+		}else {
+			Setting.notify = false;
+		}
+		var val = $('input[name=setting-quality]:checked', '#settingLayer').val();
+		if(val != Setting.FMrate) {
+			Setting.FMrate = val;
+			getFmByAjax(FM.curFm);
+		}
+		$("#settingLayer").hide();
+		$(".shade").hide();
+	});
+
+	var notifyID = 0;
+	function notify(obj) {
+		if (Setting.notify) {
+			var base = {
+				type: "basic",
+				title: obj.songName,
+				message: "歌手" + ":" + obj.artistName + "\r\n" + "专辑" + ":" + obj.albumName,
+				// iconUrl: obj.songPicSmall ? "../dist/img/music_player48.png" : "../dist/img/music_player48.png",
+				iconUrl: "../dist/img/music_player48.png",
+				buttons: [{
+					title: "haha"
+				}]
+			};
+			notifyID++;
+			(function(id) {
+				setTimeout(function() {
+					chrome.notifications.clear(id, function() {});
+				}, 10000);
+			})("id" + notifyID);
+			chrome.notifications.create("id" + notifyID, base, function() {});
+		}
+	}
+
 	// debug
 	function C(str) {
 		console.log(str);

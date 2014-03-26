@@ -50,12 +50,12 @@ var audio = {
 	},
 	setSrc: function(src) {
 		this.audioEle.pause();
-		audio.audioEle.src = null;
-		audio.audioEle.src = src;
-		audio.audioEle.autoplay = true;
 		$(".slider-range").css('width', '0%');
 		$(".slider-handle").css('width', '0%');
 		$(".icon-play").removeClass('icon-play').addClass('icon-pause');
+		audio.audioEle.src = null;
+		audio.audioEle.src = src;
+		audio.audioEle.autoplay = true;
 	},
 	setVolume: function(vol) {
 		if(this.audioEle.duration) {

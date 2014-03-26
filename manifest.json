@@ -3,6 +3,7 @@
   "name": "Rock Music Player",
   "version": "2",
   "permissions": [
+    "notifications",
     "fileSystem" ,
     "storage",
     {"mediaGalleries": ["read", "allAutoDetected"] }, 
@@ -23,5 +24,8 @@
       "scripts": ["main.js"]
     }
   },
-  "minimum_chrome_version": "23"
+  "minimum_chrome_version": "23",
+  "icons": {
+    "128": "dist/img/music_player128.png" 
+  }
 }

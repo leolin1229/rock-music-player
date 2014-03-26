@@ -447,7 +447,7 @@
 			<div class="layer-body-footer">
 				<a class="add-btn btn" id="addBtn" hidefocus="true">添加扫描目录</a>
 				<a class="scan-btn btn" id="scanBtn" hidefocus="true">开始扫描</a>
-				<a class="cancel-btn btn" id="cancelBtn" hidefocus="true">取消</a>
+				<a class="cancel-btn btn" hidefocus="true">取消</a>
 			</div>
 		</div>
 		<div class="layer-border"></div>
@@ -458,7 +458,46 @@
 			<div class="layer-body-title"></div>
 			<div class="layer-body-content" id="qrcode"></div>
 			<div class="layer-body-footer">
-				<a class="cancel-btn btn" id="cancelBtn" hidefocus="true">确定</a>
+				<a class="cancel-btn btn" hidefocus="true">确定</a>
+			</div>
+		</div>
+		<div class="layer-border"></div>
+	</div>
+	<!-- 设置弹出层 -->
+	<div id="settingLayer" class="layer">
+		<div class="layer-body">
+			<div class="layer-body-title">设置</div>
+			<div class="layer-body-content">
+				<section>
+					<h4>桌面通知</h4>
+					<p>
+						<label for="settingNotify">
+							<input type="checkbox" id="settingNotify">
+							<span>最小化窗口播放下一曲的时候开启桌面通知</span>
+						</label>
+					</p>
+					<h4>音乐电台音质选择</h4>
+					<p>
+						<label>
+							<input name="setting-quality" type="radio" value="64">
+							<span>流畅</span>
+						</label>
+						&nbsp&nbsp&nbsp&nbsp
+						<label>
+							<input name="setting-quality" type="radio" value="128" checked="checked">
+							<span>标准</span>
+						</label>
+						&nbsp&nbsp&nbsp&nbsp
+						<label>
+							<input name="setting-quality" type="radio" value="320">
+							<span>高品质</span>
+						</label>
+					</p>
+				</section>
+			</div>
+			<div class="layer-body-footer">
+				<a class="ok-btn btn" hidefocus="true">应用</a>
+				<a class="cancel-btn btn" hidefocus="true">取消</a>
 			</div>
 		</div>
 		<div class="layer-border"></div>
