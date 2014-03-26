@@ -1084,6 +1084,22 @@ $(document).ready(function() {
 		}).done(function() {});
 	}
 
+	function offlineDbInit() {
+		$.indexedDB("offlineMusicDB", {
+			version: 1,
+			schema: {
+				"1": function(tran) {
+					var objStore = tran.createObjectStore("musicList", {
+						autoIncrement: true
+					});
+					objStore.createIndex("artistName");
+					objStore.createIndex("albumName");
+					objStore.createIndex("songName");
+				}
+			}
+		}).done(function() {});
+	}
+
 	// 本地歌曲类别数据库初始化
 	function categoryDbInit() {
 		$.indexedDB("categoryDB", {
@@ -1163,8 +1179,10 @@ $(document).ready(function() {
 		}, getMusicInfo);
 		// $.indexedDB("localMusicDB").deleteDatabase();
 		// $.indexedDB("onlineMusicDB").deleteDatabase();
+		// $.indexedDB("offlineMusicDB").deleteDatabase();
 		// $.indexedDB("recycleMusicDB").deleteDatabase();
 		// $.indexedDB("categoryDB").deleteDatabase();
+
 		// 本地歌曲数据库
 		localDbInit();
 		$.indexedDB("localMusicDB").objectStore("musicList").count().done(function(res, event) {
@@ -1199,6 +1217,8 @@ $(document).ready(function() {
 				"<li data-catid="+item.value.id+"><p class='cat-list-name'>"+item.value.name+"</p><input type='text' class='edit-name' id='editName_"+item.value.id+"' value='"+item.value.name+"' style='display: none;'><div class='edit-icons' style='display: none;'><a hidefocus='true' class='edit-change'><i class='icon-edit'></i></a><a hidefocus='true' class='edit-delete'><i class='icon-remove-2'></i></a></div></li>"
 			);
 		}).done();
+
+		offlineDbInit();
 	}();
 
 	// 本地音乐和在线音乐标签切换
@@ -1744,6 +1764,7 @@ $(document).ready(function() {
 		$("#searchInput").on('keydown', _this, function(e) {
 			if(e.keyCode == 13) {
 				var keyword = $.trim(_this.val());
+				C(keyword);
 				$.ajax({
 					url: 'http://mp3.baidu.com/dev/api/?tn=getinfo&ct=0&ie=utf-8&format=json&word='+keyword,
 					type: 'GET',
@@ -1751,13 +1772,13 @@ $(document).ready(function() {
 					beforeSend: function() {
 						$("#online").addClass('menu-active').siblings().removeClass('menu-active');
 						$("#search-result").addClass('list-active').siblings().removeClass('list-active');
-						$("#SearchList").html('<h3>正在搜索～</h3>');
+						$("#SearchList").empty().html('<h3>正在搜索～</h3>');
 						$("#onlineBody").show().siblings().hide();
 						$("#leftCol2-search-result").show().siblings().hide();
 					},
 					success: function(res) {
 						if(!res.length) {
-							$("#SearchList").html('<h3>没有结果哦～</h3>');
+							$("#SearchList").empty().html('<h3>没有结果哦～</h3>');
 						}else {
 							$("#SearchList").empty();
 							res.forEach(function(item, index, arr) {
@@ -2108,28 +2129,47 @@ $(document).ready(function() {
 	}
 
 	var offlineFs;
-
-	var reqQuota = 1024 * 1024 * 1024;// 1GB
-	var fileEntry;
+	var totalSpace = 1024 * 1024 * 1024;// 1GB
+	var DirEntry;
 	var dir = "offline";
+	var offlineMusicCnt = 0;
+	// 离线空间对象
+	var OfflineSpace = {
+		used: 0,
+		total: totalSpace // 单位B
+	};
+	var offlineMusic = {
+		array: [],
+		currentID: -1
+	};
 	window.StorageInfo = window.navigator.webkitPersistentStorage || window.StorageInfo || window.webkitStorageInfo;
 	window.StorageInfo.queryUsageAndQuota(function(used, remaining) { // successCallback
-		if (reqQuota > remaining) {
-			reqQuota = remaining / 3;
+		if (totalSpace > remaining) {
+			totalSpace = remaining / 3;
 		}
-		var total = Number((reqQuota / 1024 / 1024).toFixed(2));
-		// C(reqQuota+"!!!");
-		window.webkitRequestFileSystem(PERSISTENT, reqQuota, function(fs) {
+		C(used+"~~"+remaining);
+		OfflineSpace.total = totalSpace;
+		
+		window.webkitRequestFileSystem(PERSISTENT, totalSpace, function(fs) {
 			offlineFs = fs;
 			fs.root.getDirectory(dir, {create: true}, function(entry) {
-				fileEntry = entry;
-			});
+				DirEntry = entry;
+			}, errorHandler);
+			var reader = fs.root.createReader();
+			reader.readEntries(function(entries) {
+				C(entries);
+				for (var i = 0, entry; entry = entries[i]; ++i) {
+					C(entry.name);
+				}
+			}, errorHandler);
 		}, errorHandler);
 	}, errorHandler);
 
-	var offlineMusic = {
-		writeFile: function(fileName, U, callback) {
+	var offlineMusicHandler = {
+		writeFile: function(fileName, item, callback) {
 			offlineFs.root.getFile(dir + "/" + fileName, {create: true}, function(fileEntry) {
+				C(fileEntry);
+
 				fileEntry.createWriter(function(fileWriter) {
 					fileWriter.onwriteend = function(Y) {
 						console.log("Write completed.");
@@ -2138,7 +2178,7 @@ $(document).ready(function() {
 					fileWriter.onerror = function(Y) {
 						console.log("Write failed: " + Y.toString());
 					};
-					fileWriter.write(U);
+					fileWriter.write(item);
 				});
 			});
 		},
@@ -2160,14 +2200,51 @@ $(document).ready(function() {
 			});
 		},
 		wipe: function(callback) {
-			fileEntry.removeRecursively(function() {
+			DirEntry.removeRecursively(function() {
 				callback();
 			});
 		}
 	};
 
 	var downloadHandler = function(url, musicInfo, index) {
-		var fullPath = musicInfo.fullPath;
+		$("#local").addClass('menu-active').siblings().removeClass('menu-active');
+		$("#localBody").show().siblings().hide();
+		$("#offlineList").addClass('list-active').siblings().removeClass('list-active');
+		$("#leftCol2-offlineList").show().siblings().hide();
+		var self = this;
+		var dom = $('<div class="offline-list-row"><div class="list-cell c0">'+ musicInfo.songName +'</div><div class="list-cell c1">'+ musicInfo.artistName +'</div><div class="list-cell c2"><progress max="100" value="0" style="width: 20em"></progress></div></div>');
+		$("#OfflineList").prepend(dom);
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', url);
+		xhr.responseType = "blob";
+		xhr.onload = function() {
+			var size = this.response.size;
+			if(OfflineSpace.used + size > totalSpace) {
+				C("outofspace");
+				dom.remove();
+				delete offlineMusic.array[index];
+				return ;
+			}
+			offlineMusicHandler.wipe(function() {
+				window.StorageInfo.queryUsageAndQuota(function(used, remaining) {
+					C(used+"!!!"+remaining);
+				});
+			});
+			// offlineMusicHandler.writeFile(musicInfo.songName, this.response, function() {
+			// 	// $.indexedDB("offlineMusicDb").objectStore("musicList").add(musicInfo).done(function(res, event) {
+			// 	// 	dom.remove();
+			// 	// 	var dd = $('<div class="offline-list-row" data-lrc="'+musicInfo.lrcLink+'" data-src="'+musicInfo.songLink+'" data-albumname="'+musicInfo.albumName+'"><div class="list-cell c0">'+ musicInfo.songName +'</div><div class="list-cell c1">'+ musicInfo.artistName +'</div><div class="list-cell c2"><progress max="100" value="0" style="width: 20em"></progress></div></div>');
+			// 	// 	$("#offlineList").prepend(dd);
+			// 	// });
+			// });
+		};
+		xhr.onprogress = function(res) {
+			dom.find("progress").attr({
+				max: res.totalSize,
+				value: res.loaded
+			});
+		};
+		xhr.send();
 	};
 
 	$(".widget").on('click', '.download', function(event) {
@@ -2181,10 +2258,27 @@ $(document).ready(function() {
 				musicInfo = onlineMusic.array[onlineMusic.currentID];
 			}
 			C(musicInfo);
+			downloadHandler(musicInfo.songLink, musicInfo, offlineMusicCnt);
 		}
 
 	});
 
+	function deleteOfflineMusic() {
+		var key = null;
+		$.indexedDB("offlineMusicDb").objectStore("musicList").each(function(item) {
+			var U = item.value;
+			l.downloadSong.push(U);
+		}).done(function() {
+			l.downloadSong.reverse();
+			l.current.downloadSong = l.downloadSong;
+			window.StorageInfo.queryUsageAndQuota(function(item) {
+				l.space.usedspace = item;
+				l.space.used = (item / 1024 / 1024).toFixed(2);
+				l.space.leftspace = (l.space.total - (item / 1024 / 1024)).toFixed(2);
+				l.$apply();
+			});
+		});
+	}
 	// debug
 	function C(str) {
 		console.log(str);

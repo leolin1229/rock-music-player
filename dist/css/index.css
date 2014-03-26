@@ -1025,3 +1025,12 @@ header {
 #settingLayer p, #settingLayer h4 {
 	margin: 15px 0;
 }
+
+.offline-list-row {
+	height: 50px;
+	width: 100%;
+	line-height: 50px;
+	border-bottom: 1px solid #ececec;
+	font-size: 15px;
+	cursor: pointer;
+}

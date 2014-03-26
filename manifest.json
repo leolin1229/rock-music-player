@@ -6,6 +6,7 @@
     "notifications",
     "fileSystem" ,
     "storage",
+    "unlimitedStorage",
     {"mediaGalleries": ["read", "allAutoDetected"] }, 
     "storage",
     "http://song4u.sinaapp.com/*",
