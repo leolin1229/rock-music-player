@@ -45,6 +45,8 @@ $(document).ready(function() {
 		FMrate: '128',
 		notify: false
 	}
+	// 正在播放的搜索结果
+	var searchPlaying = {};
 
 	var remote = {
 		playing: function(musicInfo) {
@@ -246,7 +248,7 @@ $(document).ready(function() {
 		switch(mode) {
 			case 0: 
 			// local
-			if(localMusic.currentID >= 0 && onlineMusic.currentID <= -1) {
+			if(localMusic.currentID >= 0 && onlineMusic.currentID <= -1 && offlineMusic.currentID <= -1) {
 				var oldIndex = localMusic.currentID;
 				while((localMusic.currentID = parseInt(Math.random()*(localMusic.len-1)+0.5))==oldIndex);
 
@@ -257,9 +259,10 @@ $(document).ready(function() {
 				myAudio.lrcLink = localMusic.array[localMusic.currentID].lrcLink;
 				readFileAsPath(localMusic.array[localMusic.currentID].galleryId, localMusic.array[localMusic.currentID].fullPath);
 				
+				notify(localMusic.array[localMusic.currentID]);
 				// 远程
 				remote.playing(localMusic.array[localMusic.currentID]);
-			}else if(localMusic.currentID <= -1 && onlineMusic.currentID >= 0) {
+			}else if(localMusic.currentID <= -1 && onlineMusic.currentID >= 0 && offlineMusic.currentID <= -1) {
 				// online
 				if(onlineMusic.currentID < onlineMusic.len) {
 					if(onlineMusic.len > 1) {
@@ -273,10 +276,31 @@ $(document).ready(function() {
 					$(".title .artist").text(onlineMusic.array[onlineMusic.currentID].artistName);
 					$(".title .songname").text(onlineMusic.array[onlineMusic.currentID].songName);
 
+					notify(onlineMusic.array[onlineMusic.currentID]);
 					// 远程
 					remote.playing(onlineMusic.array[onlineMusic.currentID]);
 				}else {
 					C("不存在歌曲！");
+				}
+			}else if(localMusic.currentID <= -1 && onlineMusic.currentID <= -1 && offlineMusic.currentID >= 0) {
+				// offline
+				if(offlineMusic.currentID < offlineMusic.len) {
+					if(offlineMusic.len > 1) {
+						offlineMusic.currentID = parseInt(Math.random()*(offlineMusic.len-1)+0.5);
+					}else if(offlineMusic.len == 1) {
+						offlineMusic.currentID = 0;
+					}
+					myAudio.setSrc(offlineMusic.array[offlineMusic.currentID].songLink);
+					myAudio.lrcLink = offlineMusic.array[offlineMusic.currentID].lrcLink;
+
+					$(".title .artist").text(offlineMusic.array[offlineMusic.currentID].artistName);
+					$(".title .songname").text(offlineMusic.array[offlineMusic.currentID].songName);
+
+					notify(offlineMusic.array[offlineMusic.currentID]);
+					// 远程
+					remote.playing(offlineMusic.array[offlineMusic.currentID]);
+				}else {
+					C("不存在离线歌曲！");
 				}
 			}else if(FM.currentID >= 0) {
 				FM.currentID++;
@@ -296,7 +320,7 @@ $(document).ready(function() {
 
 			case 2: 
 			// local
-			if(localMusic.currentID >= 0 && onlineMusic.currentID <= -1) {
+			if(localMusic.currentID >= 0 && onlineMusic.currentID <= -1 && offlineMusic.currentID <= -1) {
 				localMusic.currentID = ((localMusic.currentID+1) >= localMusic.len) ? 0 : (localMusic.currentID+1);
 
 				if(localMusic.array[localMusic.currentID].lrcLink == '') {
@@ -306,9 +330,10 @@ $(document).ready(function() {
 				myAudio.lrcLink = localMusic.array[localMusic.currentID].lrcLink;
 				readFileAsPath(localMusic.array[localMusic.currentID].galleryId, localMusic.array[localMusic.currentID].fullPath);
 				
+				notify(localMusic.array[localMusic.currentID]);
 				// 远程
 				remote.playing(localMusic.array[localMusic.currentID]);
-			}else if(localMusic.currentID <= -1 && onlineMusic.currentID >= 0) {
+			}else if(localMusic.currentID <= -1 && onlineMusic.currentID >= 0 && offlineMusic.currentID <= -1) {
 				// online
 				onlineMusic.currentID = ((onlineMusic.currentID + 1) >= onlineMusic.len) ? 0 : (onlineMusic.currentID + 1);
 				
@@ -318,8 +343,22 @@ $(document).ready(function() {
 				$(".title .artist").text(onlineMusic.array[onlineMusic.currentID].artistName);
 				$(".title .songname").text(onlineMusic.array[onlineMusic.currentID].songName);
 
+				notify(onlineMusic.array[onlineMusic.currentID]);
 				// 远程
 				remote.playing(onlineMusic.array[onlineMusic.currentID]);
+			}else if(localMusic.currentID <= -1 && onlineMusic.currentID <= -1 && offlineMusic.currentID >= 0) {
+				// offline
+				offlineMusic.currentID = ((offlineMusic.currentID + 1) >= offlineMusic.len) ? 0 : (offlineMusic.currentID + 1);
+				
+				myAudio.setSrc(offlineMusic.array[offlineMusic.currentID].songLink);
+				myAudio.lrcLink = offlineMusic.array[offlineMusic.currentID].lrcLink;
+
+				$(".title .artist").text(offlineMusic.array[offlineMusic.currentID].artistName);
+				$(".title .songname").text(offlineMusic.array[offlineMusic.currentID].songName);
+
+				notify(offlineMusic.array[offlineMusic.currentID]);
+				// 远程
+				remote.playing(offlineMusic.array[offlineMusic.currentID]);
 			}else if(FM.currentID >= 0) {
 				FM.currentID++;
 				if(FM.currentID > 9) {
@@ -345,7 +384,7 @@ $(document).ready(function() {
 			switch(this.mode) {
 				case 0: 
 				// local
-				if(localMusic.currentID >= 0 && onlineMusic.currentID <= -1) {
+				if(localMusic.currentID >= 0 && onlineMusic.currentID <= -1 && offlineMusic.currentID <= -1) {
 					var oldIndex = localMusic.currentID;
 					while((localMusic.currentID = parseInt(Math.random()*(localMusic.len-1)+0.5))==oldIndex);
 
@@ -359,7 +398,7 @@ $(document).ready(function() {
 					notify(localMusic.array[localMusic.currentID]);
 					// 远程
 					remote.playing(localMusic.array[localMusic.currentID]);
-				}else if(localMusic.currentID <= -1 && onlineMusic.currentID >= 0) {
+				}else if(localMusic.currentID <= -1 && onlineMusic.currentID >= 0 && offlineMusic.currentID <= -1) {
 					// online
 					if(onlineMusic.currentID < onlineMusic.len) {
 						if(onlineMusic.len > 1) {
@@ -375,6 +414,24 @@ $(document).ready(function() {
 						notify(onlineMusic.array[onlineMusic.currentID]);
 						// 远程
 						remote.playing(onlineMusic.array[onlineMusic.currentID]);
+					}else {
+						C("不存在歌曲！");
+					}
+				}else if(localMusic.currentID <= -1 && onlineMusic.currentID <= -1 && offlineMusic.currentID >= 0) {
+					if(offlineMusic.currentID < offlineMusic.len) {
+						if(offlineMusic.len > 1) {
+							offlineMusic.currentID = parseInt(Math.random()*(offlineMusic.len-1)+0.5);
+						}else if(offlineMusic.len == 1) {
+							offlineMusic.currentID = 0;
+						}
+						myAudio.setSrc(offlineMusic.array[offlineMusic.currentID].songLink);
+						myAudio.lrcLink = offlineMusic.array[offlineMusic.currentID].lrcLink;
+						$(".title .artist").text(offlineMusic.array[offlineMusic.currentID].artistName);
+						$(".title .songname").text(offlineMusic.array[offlineMusic.currentID].songName);
+						
+						notify(offlineMusic.array[offlineMusic.currentID]);
+						// 远程
+						remote.playing(offlineMusic.array[offlineMusic.currentID]);
 					}else {
 						C("不存在歌曲！");
 					}
@@ -399,7 +456,7 @@ $(document).ready(function() {
 				
 				case 2: 
 				// local
-				if(localMusic.currentID >= 0 && onlineMusic.currentID <= -1) {
+				if(localMusic.currentID >= 0 && onlineMusic.currentID <= -1 && offlineMusic.currentID <= -1) {
 					localMusic.currentID = ((localMusic.currentID - 1) < 0) ? (localMusic.len - 1) : (localMusic.currentID - 1);
 					
 					if(localMusic.array[localMusic.currentID].lrcLink == '') {
@@ -412,7 +469,7 @@ $(document).ready(function() {
 					notify(localMusic.array[localMusic.currentID]);
 					// 远程
 					remote.playing(localMusic.array[localMusic.currentID]);
-				}else if(localMusic.currentID <= -1 && onlineMusic.currentID >= 0) {
+				}else if(localMusic.currentID <= -1 && onlineMusic.currentID >= 0 && offlineMusic.currentID <= -1) {
 					// online
 					onlineMusic.currentID = ((onlineMusic.currentID - 1) < 0) ? (onlineMusic.len - 1) : (onlineMusic.currentID - 1);
 					
@@ -424,6 +481,18 @@ $(document).ready(function() {
 					notify(onlineMusic.array[onlineMusic.currentID]);
 					// 远程
 					remote.playing(onlineMusic.array[onlineMusic.currentID]);
+				}else if(localMusic.currentID <= -1 && onlineMusic.currentID <= -1 && offlineMusic.currentID >= 0) {
+					// offline
+					offlineMusic.currentID = ((offlineMusic.currentID - 1) < 0) ? (offlineMusic.len - 1) : (offlineMusic.currentID - 1);
+					
+					myAudio.setSrc(offlineMusic.array[offlineMusic.currentID].songLink);
+					myAudio.lrcLink = offlineMusic.array[offlineMusic.currentID].lrcLink;
+					$(".title .artist").text(offlineMusic.array[offlineMusic.currentID].artistName);
+					$(".title .songname").text(offlineMusic.array[offlineMusic.currentID].songName);
+
+					notify(offlineMusic.array[offlineMusic.currentID]);
+					// 远程
+					remote.playing(offlineMusic.array[offlineMusic.currentID]);
 				}else if(FM.currentID >= 0) {
 					FM.currentID++;
 					if(FM.currentID > 9) {
@@ -445,7 +514,7 @@ $(document).ready(function() {
 			switch(this.mode) {
 				case 0: 
 				// local
-				if(localMusic.currentID >= 0 && onlineMusic.currentID <= -1) {
+				if(localMusic.currentID >= 0 && onlineMusic.currentID <= -1 && offlineMusic.currentID <= -1) {
 					var oldIndex = localMusic.currentID;
 					while((localMusic.currentID = parseInt(Math.random()*(localMusic.len-1)+0.5))==oldIndex);
 					
@@ -459,7 +528,7 @@ $(document).ready(function() {
 					notify(localMusic.array[localMusic.currentID]);
 					// 远程
 					remote.playing(localMusic.array[localMusic.currentID]);
-				}else if(localMusic.currentID <= -1 && onlineMusic.currentID >= 0) {
+				}else if(localMusic.currentID <= -1 && onlineMusic.currentID >= 0 && offlineMusic.currentID <= -1) {
 					// online
 					if(onlineMusic.currentID < onlineMusic.len) {
 						if(onlineMusic.len > 1) {
@@ -475,6 +544,25 @@ $(document).ready(function() {
 						notify(onlineMusic.array[onlineMusic.currentID]);
 						// 远程
 						remote.playing(onlineMusic.array[onlineMusic.currentID]);
+					}else {
+						C("不存在歌曲！");
+					}
+				}else if(localMusic.currentID <= -1 && onlineMusic.currentID <= -1 && offlineMusic.currentID >= 0) {
+					// offline
+					if(offlineMusic.currentID < offlineMusic.len) {
+						if(offlineMusic.len > 1) {
+							offlineMusic.currentID = parseInt(Math.random()*(offlineMusic.len-1)+0.5);
+						}else if(offlineMusic.len == 1) {
+							offlineMusic.currentID = 0;
+						}
+						myAudio.setSrc(offlineMusic.array[offlineMusic.currentID].songLink);
+						myAudio.lrcLink = offlineMusic.array[offlineMusic.currentID].lrcLink;
+						$(".title .artist").text(offlineMusic.array[offlineMusic.currentID].artistName);
+						$(".title .songname").text(offlineMusic.array[offlineMusic.currentID].songName);
+
+						notify(offlineMusic.array[offlineMusic.currentID]);
+						// 远程
+						remote.playing(offlineMusic.array[offlineMusic.currentID]);
 					}else {
 						C("不存在歌曲！");
 					}
@@ -499,7 +587,7 @@ $(document).ready(function() {
 
 				case 2: 
 				// local
-				if(localMusic.currentID >= 0 && onlineMusic.currentID <= -1) {
+				if(localMusic.currentID >= 0 && onlineMusic.currentID <= -1 && offlineMusic.currentID <= -1) {
 					localMusic.currentID = ((localMusic.currentID+1) >= localMusic.len) ? 0 : (localMusic.currentID+1);
 					
 					if(localMusic.array[localMusic.currentID].lrcLink == '') {
@@ -512,7 +600,7 @@ $(document).ready(function() {
 					notify(localMusic.array[localMusic.currentID]);
 					// 远程
 					remote.playing(localMusic.array[localMusic.currentID]);
-				}else if(localMusic.currentID <= -1 && onlineMusic.currentID >= 0) {
+				}else if(localMusic.currentID <= -1 && onlineMusic.currentID >= 0 && offlineMusic.currentID <= -1) {
 					// online
 					onlineMusic.currentID = ((onlineMusic.currentID + 1) >= onlineMusic.len) ? 0 : (onlineMusic.currentID + 1);
 					myAudio.setSrc(onlineMusic.array[onlineMusic.currentID].songLink);
@@ -523,6 +611,17 @@ $(document).ready(function() {
 					notify(onlineMusic.array[onlineMusic.currentID]);
 					// 远程
 					remote.playing(onlineMusic.array[onlineMusic.currentID]);
+				}else if(localMusic.currentID <= -1 && onlineMusic.currentID <= -1 && offlineMusic.currentID >= 0) {
+					// offline
+					offlineMusic.currentID = ((offlineMusic.currentID + 1) >= offlineMusic.len) ? 0 : (offlineMusic.currentID + 1);
+					myAudio.setSrc(offlineMusic.array[offlineMusic.currentID].songLink);
+					myAudio.lrcLink = offlineMusic.array[offlineMusic.currentID].lrcLink;
+					$(".title .artist").text(offlineMusic.array[offlineMusic.currentID].artistName);
+					$(".title .songname").text(offlineMusic.array[offlineMusic.currentID].songName);
+
+					notify(offlineMusic.array[offlineMusic.currentID]);
+					// 远程
+					remote.playing(offlineMusic.array[offlineMusic.currentID]);
 				}else if(FM.currentID >= 0) {
 					FM.currentID++;
 					if(FM.currentID > 9) {
@@ -541,7 +640,7 @@ $(document).ready(function() {
 			}
 		},
 		playPause: function() {
-			if(localMusic.currentID <= -1 && onlineMusic.currentID <= -1 && FM.currentID <= -1) {
+			if(localMusic.currentID <= -1 && onlineMusic.currentID <= -1 && FM.currentID <= -1 && offlineMusic.currentID <= -1) {
 				if(localMusic.len > 0) {
 					localMusic.currentID = 0;
 
@@ -552,6 +651,7 @@ $(document).ready(function() {
 					myAudio.lrcLink = localMusic.array[localMusic.currentID].lrcLink;
 					readFileAsPath(localMusic.array[localMusic.currentID].galleryId, localMusic.array[localMusic.currentID].fullPath);
 
+					notify(localMusic.array[localMusic.currentID]);
 					remote.playing(localMusic.array[localMusic.currentID]);
 				}else if(onlineMusic.len > 0) {
 					onlineMusic.currentID = 0;
@@ -560,7 +660,17 @@ $(document).ready(function() {
 					$(".title .artist").text(onlineMusic.array[onlineMusic.currentID].artistName);
 					$(".title .songname").text(onlineMusic.array[onlineMusic.currentID].songName);
 
+					notify(onlineMusic.array[onlineMusic.currentID]);
 					remote.playing(onlineMusic.array[onlineMusic.currentID]);
+				}else if(offlineMusic.len > 0) {
+					offlineMusic.currentID = 0;
+					myAudio.setSrc(offlineMusic.array[offlineMusic.currentID].songLink);
+					myAudio.lrcLink = offlineMusic.array[offlineMusic.currentID].lrcLink;
+					$(".title .artist").text(offlineMusic.array[offlineMusic.currentID].artistName);
+					$(".title .songname").text(offlineMusic.array[offlineMusic.currentID].songName);
+
+					notify(offlineMusic.array[offlineMusic.currentID]);
+					remote.playing(offlineMusic.array[offlineMusic.currentID]);
 				}
 			}else {
 				if(myAudio.audioEle.paused) {
@@ -583,6 +693,7 @@ $(document).ready(function() {
 			$("#playTitle .title .artist").text(obj.artistName);
 			localMusic.currentID = -1
 			onlineMusic.currentID = -1;
+
 			notify(obj);
 			remote.playing(obj);
 		}
@@ -925,7 +1036,18 @@ $(document).ready(function() {
 		$.indexedDB("recycleMusicDB").objectStore("musicList").each(function(item) {
 			addItem(cnt, item.value, "#RecycleList");
 			cnt++;
-		}).done(function(res, event) {});
+		}).done(function(res, event) {
+			if(cnt == 0) {
+				$("#RecycleList").prepend('<h3>没有歌曲哦～</h3>');
+			}
+		});
+	}
+
+	function addItem2Offline() {
+		offlineMusic.array.forEach(function(item, index, arr) {
+			var dd = $('<div class="offline-list-row complete-offline-list-row" data-lrc="'+ item.lrcLink +'" data-songname="'+item.songName+'" data-artistname="'+item.artistName+'" data-albumname="'+item.albumName+'"><div class="list-cell c0">'+ item.songName +'</div><div class="list-cell c1">'+ item.artistName +'</div><div class="list-cell c2">完成</div><div class="song-delete"><span class="delete"><i class="icon-remove-2"></i></span></div></div>');
+			$("#OfflineList").prepend(dd);
+		});
 	}
 
 	function getMusicInfo(results) {
@@ -1114,6 +1236,16 @@ $(document).ready(function() {
 			}
 		});
 	}
+	function getOfflineMusicID(obj) {
+		var id = -1;
+		offlineMusic.array.forEach(function(item, index, arr) {
+			if(item.songName == obj.songName && item.artistName == obj.artistName && item.albumName == obj.albumName) {
+				id = index;
+				return false;
+			}
+		});
+		return id;
+	}
 
 	function getLocalMusicID(obj) {
 		var id = -1;
@@ -1217,8 +1349,15 @@ $(document).ready(function() {
 				"<li data-catid="+item.value.id+"><p class='cat-list-name'>"+item.value.name+"</p><input type='text' class='edit-name' id='editName_"+item.value.id+"' value='"+item.value.name+"' style='display: none;'><div class='edit-icons' style='display: none;'><a hidefocus='true' class='edit-change'><i class='icon-edit'></i></a><a hidefocus='true' class='edit-delete'><i class='icon-remove-2'></i></a></div></li>"
 			);
 		}).done();
-
+		// 离线歌曲数据库
 		offlineDbInit();
+		$.indexedDB("offlineMusicDB").objectStore("musicList").each(function(item) {
+			offlineMusic.array.push(item.value);
+			offlineMusic.len++;
+		}).done(function() {
+			$("#OfflineList").empty();
+			addItem2Offline();
+		});
 	}();
 
 	// 本地音乐和在线音乐标签切换
@@ -1244,6 +1383,13 @@ $(document).ready(function() {
 			if(tabID == "recycleList") {
 				$("#RecycleList").empty();
 				addItem2Recycle();
+			}else if(tabID == 'offlineList') {
+				if( !offlineMusic.len && !offlineMusic.downloading) {
+					$("#OfflineList").prepend('<h3>没有歌曲哦～</h3>');
+				}else if( offlineMusic.len && !offlineMusic.downloading ){ 
+					$("#OfflineList").empty();
+					addItem2Offline();
+				}
 			}
 		}
 	});
@@ -1492,7 +1638,7 @@ $(document).ready(function() {
 		$(".layer").hide();
 	});
 
-	$("#leftCol2-songList, #leftCol2-singerList, #leftCol2-search-result, #leftCol2-mylike, #catMusicList").on('dblclick', '.list-row',function(event) {
+	$("#GalleryList, #singerListViewport, #SearchList, #MyLikeList, #catMusicList").on('dblclick', '.list-row',function(event) {
 		event.preventDefault();
 		if($('#fm-playing').length > 0){
 			$("#fm-playing").remove();
@@ -1500,20 +1646,19 @@ $(document).ready(function() {
 		myAudio.lrcLink = '';
 		// online
 		if($(this).parent('#SearchList').length > 0 || $(this).parent('#MyLikeList').length > 0) {
-			player.playOnlineMusic({
+			var musicInfo = {
 				songLink: $(this).attr('data-src'),
 				lrcLink: $(this).attr('data-lrc'),
-				songName: $(':nth-child(1) .list-songname', this).text(),
-				artistName: $(':nth-child(2) .list-songname', this).text(),
-				albumName: $(this).attr('data-albumname')
-			});
-			var musicInfo = {
 				songName: $(this).children('div.list-cell.c0').text(),
 				artistName: $(this).children('div.list-cell.c1').text(),
-				albumName: $(this).children('div.list-cell.c2').text(),
-				songLink: $(this).attr('data-src'),
-				lrcLink: $(this).attr('data-lrc')
+				albumName: $(this).children('div.list-cell.c2').text()
 			};
+			if($(this).parent('#SearchList').length > 0) {
+				searchPlaying = musicInfo;
+			}else {
+				searchPlaying = {};
+			}
+			player.playOnlineMusic(musicInfo);
 			if($(this).parent('#MyLikeList')) {
 				onlineMusic.currentID = getOnlineMusicID(musicInfo);
 				localMusic.currentID = -1;// 标记本地音乐不播放
@@ -1539,6 +1684,8 @@ $(document).ready(function() {
 
 			localMusic.currentID = getLocalMusicID(musicInfo);
 			onlineMusic.currentID = -1; // 标记在线音乐不播放
+			offlineMusic.currentID = -1; // 标记离线音乐不播放
+
 			if($(this).attr('data-lrc') == '') {
 				getLrcLinkByAjax(musicInfo, _this);
 			}else {
@@ -1552,9 +1699,44 @@ $(document).ready(function() {
 
 			// 远程
 			remote.playing(musicInfo);
-			$(".title .songname").text($(':nth-child(1) .list-songname', this).text());
-			$(".title .artist").text($(':nth-child(2) .list-songname', this).text());
+			$(".title .songname").text(musicInfo.songName);
+			$(".title .artist").text(musicInfo.artistName);
+
+			searchPlaying = {};
 		}
+	});
+	
+	$("#OfflineList").on('dblclick', '.complete-offline-list-row', function(event) {
+		event.preventDefault();
+		var _this = $(this);
+		myAudio.lrcLink = '';
+		offlineMusicHandler.readFileAsUrl(_this.attr('data-songname'), function(fuck, objectURL) {
+			var tt = ".play-btn .play-pause a";
+			$(tt).children().removeClass('icon-play').addClass('icon-pause');
+			$(tt).attr('title', '暂停');
+			$(tt).parent().removeClass('play').addClass('pause');
+			var musicInfo = {
+				songName: _this.attr('data-songname'),
+				artistName: _this.attr('data-artistname'),
+				albumName: _this.attr('data-albumname'),
+				lrcLink: _this.attr('data-lrc')
+			};
+
+			offlineMusic.currentID = getOfflineMusicID(musicInfo);
+
+			myAudio.setSrc(objectURL);
+			myAudio.play();
+			myAudio.lrcLink = _this.attr('data-lrc');
+			if(myAudio.lrcStatus) {
+				getLrcByAjax();
+			}
+
+			remote.playing(musicInfo);
+			$(".title .songname").text(musicInfo.songName);
+			$(".title .artist").text(musicInfo.artistName);
+
+			searchPlaying = {};
+		});
 	});
 
 	$("ul").on('click', '.pause .ctrl-btn', function(event) {
@@ -2082,7 +2264,6 @@ $(document).ready(function() {
 		});
 	}
 
-
 	$("#menu").on('click', '#setting', function(event) {
 		event.preventDefault();
 		$("#settingLayer").show('slow');
@@ -2131,45 +2312,52 @@ $(document).ready(function() {
 	var offlineFs;
 	var totalSpace = 1024 * 1024 * 1024;// 1GB
 	var DirEntry;
-	var dir = "offline";
-	var offlineMusicCnt = 0;
+	var dirName = "offline";
 	// 离线空间对象
 	var OfflineSpace = {
 		used: 0,
 		total: totalSpace // 单位B
 	};
+	// 离线音乐对象
 	var offlineMusic = {
 		array: [],
-		currentID: -1
+		currentID: -1,
+		len: 0,
+		downloading: false
 	};
 	window.StorageInfo = window.navigator.webkitPersistentStorage || window.StorageInfo || window.webkitStorageInfo;
 	window.StorageInfo.queryUsageAndQuota(function(used, remaining) { // successCallback
 		if (totalSpace > remaining) {
 			totalSpace = remaining / 3;
 		}
-		C(used+"~~"+remaining);
+		// C(used+"~~"+remaining);
 		OfflineSpace.total = totalSpace;
 		
 		window.webkitRequestFileSystem(PERSISTENT, totalSpace, function(fs) {
 			offlineFs = fs;
-			fs.root.getDirectory(dir, {create: true}, function(entry) {
+			fs.root.getDirectory(dirName, {create: true}, function(entry) {
 				DirEntry = entry;
 			}, errorHandler);
-			var reader = fs.root.createReader();
-			reader.readEntries(function(entries) {
-				C(entries);
-				for (var i = 0, entry; entry = entries[i]; ++i) {
-					C(entry.name);
-				}
-			}, errorHandler);
+			// // 遍历offline文件
+			// var reader = fs.root.createReader();
+			// reader.readEntries(function(entries) {
+			// 	for (var i = 0, entry; entry = entries[i]; i++) {
+			// 		if(entry.isDirectory) {
+			// 			var er = entry.createReader();
+			// 			er.readEntries(function(ee) {
+			// 				for (var j = 0, en; en = ee[j]; j++) {
+			// 					C(en);
+			// 				};
+			// 			});
+			// 		}
+			// 	}
+			// }, errorHandler);
 		}, errorHandler);
 	}, errorHandler);
 
 	var offlineMusicHandler = {
-		writeFile: function(fileName, item, callback) {
-			offlineFs.root.getFile(dir + "/" + fileName, {create: true}, function(fileEntry) {
-				C(fileEntry);
-
+		writeFile: function(fileName, blob, callback) {
+			offlineFs.root.getFile(dirName + "/" + fileName + ".mp3", {create: true}, function(fileEntry) {
 				fileEntry.createWriter(function(fileWriter) {
 					fileWriter.onwriteend = function(Y) {
 						console.log("Write completed.");
@@ -2178,12 +2366,12 @@ $(document).ready(function() {
 					fileWriter.onerror = function(Y) {
 						console.log("Write failed: " + Y.toString());
 					};
-					fileWriter.write(item);
+					fileWriter.write(blob);
 				});
 			});
 		},
 		remove: function(fileName, callback) {
-			offlineFs.root.getFile(dir + "/" + fileName, {
+			offlineFs.root.getFile(dirName + "/" + fileName + ".mp3", {
 				create: false
 			}, function(fileEntry) {
 				fileEntry.remove(function() {
@@ -2192,10 +2380,10 @@ $(document).ready(function() {
 			});
 		},
 		readFileAsUrl: function(fileName, callback) {
-			offlineFs.root.getFile(dir + "/" + fileName, {}, function(fileEntry) {
+			offlineFs.root.getFile(dirName + "/" + fileName + ".mp3", {}, function(fileEntry) {
 				fileEntry.file(function(file) {
-					var W = window.webkitURL.createObjectURL(file);
-					callback(null, W);
+					var objectURL = window.webkitURL.createObjectURL(file);
+					callback(null, objectURL);
 				});
 			});
 		},
@@ -2206,40 +2394,59 @@ $(document).ready(function() {
 		}
 	};
 
-	var downloadHandler = function(url, musicInfo, index) {
+	var downloadHandler = function(url, musicInfo) {
+		// C(musicInfo);
 		$("#local").addClass('menu-active').siblings().removeClass('menu-active');
 		$("#localBody").show().siblings().hide();
 		$("#offlineList").addClass('list-active').siblings().removeClass('list-active');
 		$("#leftCol2-offlineList").show().siblings().hide();
-		var self = this;
-		var dom = $('<div class="offline-list-row"><div class="list-cell c0">'+ musicInfo.songName +'</div><div class="list-cell c1">'+ musicInfo.artistName +'</div><div class="list-cell c2"><progress max="100" value="0" style="width: 20em"></progress></div></div>');
-		$("#OfflineList").prepend(dom);
+		var id = getRandomString(4);
+		var div = $('<div id="downloadingID_' + id + '" class="offline-list-row"><div class="list-cell c0">'+ musicInfo.songName +'</div><div class="list-cell c1">'+ musicInfo.artistName +'</div><div class="list-cell c2"><progress max="100" value="0" style="width: 20em"></progress></div></div>');
+		if($("#OfflineList h3").length > 0) {
+			$("#OfflineList").empty();
+		}
+		$("#OfflineList").prepend(div);
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', url);
 		xhr.responseType = "blob";
+		offlineMusic.downloading = true;
 		xhr.onload = function() {
 			var size = this.response.size;
 			if(OfflineSpace.used + size > totalSpace) {
 				C("outofspace");
-				dom.remove();
-				delete offlineMusic.array[index];
+				div.remove();
+				xhr.abort();
 				return ;
 			}
-			offlineMusicHandler.wipe(function() {
-				window.StorageInfo.queryUsageAndQuota(function(used, remaining) {
-					C(used+"!!!"+remaining);
+			// offlineMusicHandler.wipe(function() {});
+			// 写入目录
+			offlineMusicHandler.writeFile(musicInfo.songName, this.response, function() {
+				// 保存数据库的离线歌曲信息
+				$.indexedDB("offlineMusicDB").objectStore("musicList").add({
+					albumName: musicInfo.albumName,
+					artistName: musicInfo.artistName,
+					lrcLink: musicInfo.lrcLink,
+					songLink: musicInfo.songLink,
+					songName: musicInfo.songName
+				}).done(function(res, event) {
+					div.remove();
+					offlineMusic.len++;
+					var dd = $('<div class="offline-list-row complete-offline-list-row" data-lrc="'+ musicInfo.lrcLink +'" data-songname="'+musicInfo.songName+'" data-artistname="'+musicInfo.artistName+'" data-albumname="'+musicInfo.albumName+'"><div class="list-cell c0">'+ musicInfo.songName +'</div><div class="list-cell c1">'+ musicInfo.artistName +'</div><div class="list-cell c2">完成</div><div class="song-delete"><span class="delete"><i class="icon-remove-2"></i></span></div></div>');
+					$("#OfflineList").prepend(dd);
+					offlineMusic.array.push({
+						albumName: musicInfo.albumName,
+						artistName: musicInfo.artistName,
+						lrcLink: musicInfo.lrcLink,
+						songLink: musicInfo.songLink,
+						songName: musicInfo.songName
+					});
+
+					offlineMusic.downloading = false;
 				});
 			});
-			// offlineMusicHandler.writeFile(musicInfo.songName, this.response, function() {
-			// 	// $.indexedDB("offlineMusicDb").objectStore("musicList").add(musicInfo).done(function(res, event) {
-			// 	// 	dom.remove();
-			// 	// 	var dd = $('<div class="offline-list-row" data-lrc="'+musicInfo.lrcLink+'" data-src="'+musicInfo.songLink+'" data-albumname="'+musicInfo.albumName+'"><div class="list-cell c0">'+ musicInfo.songName +'</div><div class="list-cell c1">'+ musicInfo.artistName +'</div><div class="list-cell c2"><progress max="100" value="0" style="width: 20em"></progress></div></div>');
-			// 	// 	$("#offlineList").prepend(dd);
-			// 	// });
-			// });
 		};
 		xhr.onprogress = function(res) {
-			dom.find("progress").attr({
+			$("#downloadingID_"+id).find("progress").attr({
 				max: res.totalSize,
 				value: res.loaded
 			});
@@ -2252,32 +2459,53 @@ $(document).ready(function() {
 		var url = myAudio.getSrc();
 		var musicInfo = {};
 		if(url) {
+			// FM
 			if(FM.currentID >= 0 && onlineMusic.currentID < 0) {
 				musicInfo = FM.songList[FM.currentID];
-			}else if(FM.currentID < 0 && onlineMusic.currentID >= 0) {
+			}else if(FM.currentID < 0 && onlineMusic.currentID >= 0) { // online
 				musicInfo = onlineMusic.array[onlineMusic.currentID];
+			}else if(!isEmptyObject(searchPlaying)) {
+				musicInfo = searchPlaying;
 			}
-			C(musicInfo);
-			downloadHandler(musicInfo.songLink, musicInfo, offlineMusicCnt);
+			downloadHandler(musicInfo.songLink, musicInfo);
 		}
-
 	});
 
-	function deleteOfflineMusic() {
+	$("#OfflineList").on('click', '.song-delete', function(event) {
+		event.preventDefault();
+		var parent = $(this).parent('.complete-offline-list-row');
+
+		var musicInfo = {
+			songName: parent.attr('data-songname'),
+			artistName: parent.attr('data-artistname'),
+			albumName: parent.attr('data-albumname')
+		}
 		var key = null;
-		$.indexedDB("offlineMusicDb").objectStore("musicList").each(function(item) {
-			var U = item.value;
-			l.downloadSong.push(U);
+
+		$.indexedDB("offlineMusicDB").objectStore("musicList").each(function(item) {
+			if(item.value.songName == musicInfo.songName && item.value.artistName == musicInfo.artistName && item.value.albumName == musicInfo.albumName) {
+				key = item.key;
+				return false;
+			}
 		}).done(function() {
-			l.downloadSong.reverse();
-			l.current.downloadSong = l.downloadSong;
-			window.StorageInfo.queryUsageAndQuota(function(item) {
-				l.space.usedspace = item;
-				l.space.used = (item / 1024 / 1024).toFixed(2);
-				l.space.leftspace = (l.space.total - (item / 1024 / 1024)).toFixed(2);
-				l.$apply();
-			});
+			if(key) {
+				$.indexedDB("offlineMusicDB").objectStore("musicList").delete(key).done(function() {
+					offlineMusicHandler.remove(songName, function() {
+						var id = getOfflineMusicID(musicInfo);
+						offlineMusic.array.splice(id, 1);
+						offlineMusic.len--;
+						parent.remove();
+					});
+				});
+			}
 		});
+	});
+
+	function isEmptyObject(obj) {
+		if(obj == null) return true;
+		if(obj.length === 0) return true;
+		if(Object.keys(obj).length === 0) return true;
+		return false;
 	}
 	// debug
 	function C(str) {

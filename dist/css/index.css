@@ -521,7 +521,8 @@ header {
 	overflow-x: hidden;
 }
 
-.list-row {
+.list-row,
+.complete-offline-list-row {
 	height: 50px;
 	width: 100%;
 	line-height: 50px;
@@ -533,6 +534,10 @@ header {
 	-webkit-box-orient: horizontal;
 	-webkit-transition: all .3s;
 	-webkit-font-smoothing: antialiased;
+}
+
+.complete-offline-list-row:hover {
+	-webkit-transform: translateX(51px);
 }
 
 /*鼠标悬浮每一行*/
@@ -1033,4 +1038,16 @@ header {
 	border-bottom: 1px solid #ececec;
 	font-size: 15px;
 	cursor: pointer;
+}
+
+progress {
+    border-radius: 5px;
+}
+ 
+progress::-webkit-progress-bar {
+    background-color: #d7d7d7;
+}
+ 
+progress::-webkit-progress-value {
+    background-color: #ffa100;
 }
