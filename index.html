@@ -35,7 +35,7 @@
 					</div>
 					<div id="toggle">
 						<ul id="toggleList">
-							<li id="songList"><p class="cat-list-name">全部歌曲</p></li>
+							<li id="songList" class="toggle-active"><p class="cat-list-name">全部歌曲</p></li>
 						</ul>
 						<div id="addCat">
 							<input class="edit-name" value="我的歌单" style="display: none;">
@@ -139,11 +139,11 @@
 						</div>
 					</div>
 					<div class="list-viewport" id="OfflineList">
-						<div class="offline-list-row">
+<!-- 						<div class="offline-list-row">
 							<div class="list-cell c0">111</div>
 							<div class="list-cell c1">222</div>
 							<div class="list-cell c2"><progress max="100" value="50" style="width: 20em"></progress></div>
-						</div>
+						</div> -->
 					</div>
 				</div>
 			</div>
@@ -355,7 +355,7 @@
 		</section>
 
 		<section id="lrcWrapper" class="lrcHide">
-			<div class="lrcContent"></div>
+			<div id="lrcContent"></div>
 		</section>
 	</div>
 	<!-- 底部 -->
@@ -500,7 +500,7 @@
 					<p>
 						<label for="settingNotify">
 							<input type="checkbox" id="settingNotify">
-							<span>最小化窗口播放下一曲的时候开启桌面通知</span>
+							<span>勾选播放下一曲的时候开启桌面通知</span>
 						</label>
 					</p>
 					<h4>音乐电台音质选择</h4>

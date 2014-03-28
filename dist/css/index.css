@@ -147,7 +147,7 @@ header {
 /*左侧控制按钮*/
 .play-btn {
 	height: 45px;
-	margin: 20px 20px;
+	margin: 14px 20px;
 	list-style: none;
 	padding: 0;
 }
@@ -328,9 +328,12 @@ header {
 }
 
 .panel {
-	overflow: hidden;
+	position: relative;
+	/* overflow-x: auto; */
 	clear: both;
-	padding-left: 20px;
+	margin-left: 20px;
+	/* width: 530px; */
+	padding-top: 1px;
 }
 
 .panel .time {
@@ -344,7 +347,8 @@ header {
 
 .panel .progress-wrapper {
 	margin-right: 100px;
-	height: 20px;
+	height: 8px;
+	/* width: 437px; */
 }
 
 #progressSlider {
@@ -507,6 +511,14 @@ header {
 	width: 38%;
 }
 
+.c00 {
+	width: 30%;
+}
+
+.c11 {
+	width: 60%;
+}
+
 .tips {
 	font-size: 15px;
 	margin-left: 15px;
@@ -522,7 +534,8 @@ header {
 }
 
 .list-row,
-.complete-offline-list-row {
+.complete-offline-list-row,
+.singer-list-row {
 	height: 50px;
 	width: 100%;
 	line-height: 50px;
@@ -541,7 +554,11 @@ header {
 }
 
 /*鼠标悬浮每一行*/
-.list-row:hover {
+
+#GalleryList .list-row:hover,
+#RecycleList .list-row:hover,
+#SearchList .list-row:hover,
+#MyLikeList .list-row:hover{
 	-webkit-transform: translateX(102px);
 }
 
@@ -815,7 +832,7 @@ header {
 	z-index: 1001;
 }
 
-.lrcContent p {
+#lrcContent p {
 	color: #fff;
 	text-align: center;
 	height: 40px;
@@ -826,13 +843,13 @@ header {
 	font-size: 14px;
 }
 
-.lrcContent .cur {
+#lrcContent .cur {
 	color: #00FF00;
 	font-weight: bold;
 	font-size: 16px;
 }
 
-.lrcContent {
+#lrcContent {
 	margin-top: 250px;
 }
 
@@ -887,12 +904,13 @@ header {
 #toggle ul li p {
 	font-size: 16px;
 	display: block;
-	padding: 5px 55px;
+	padding: 5px 50px;
 	float: left;
 	/*border-bottom: 1px solid #c1c1c1;*/
 }
 
-#toggle ul li:hover {
+#toggle ul li:hover,
+.toggle-active {
 	background-color: rgba(0, 0, 0, 0.1);
 	border-left: 2px solid #f67600;
 }

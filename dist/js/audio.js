@@ -2,7 +2,7 @@
 
 var audio = {
 	audioEle: null,
-	lrcContent: $(".lrcContent"),
+	lrcContent: $("#lrcContent"),
 	lrcStep: 0,
 	lrcData: null,
 	lrcStatus: false,
@@ -40,27 +40,22 @@ var audio = {
 	onCanplaythrough:function() {
 		C("onCanplaythrough");
 	},
-	setCurrentTime: function(percent) {
-		if(this.audioEle.duration) {
-			var width = parseInt($(".slider-bar").width());
-			this.audioEle.currentTime = audio.audioEle.duration * percent;
-			$(".slider-range").css('width', percent * 100 + '%');
-			$(".slider-handle").css('left', percent * width + 'px');
-		}
-	},
+	setCurrentTime: function(percent) {},
 	setSrc: function(src) {
-		this.audioEle.pause();
-		$(".slider-range").css('width', '0%');
-		$(".slider-handle").css('width', '0%');
-		$(".icon-play").removeClass('icon-play').addClass('icon-pause');
-		if(src && src.match("baidu.com") && $(".download").length <= 0) {
-			$(".widget").prepend('<div class="download"><a class="ctrl-btn" hidefocus="true" title="下载"><i class="icon-download-alt"></i></a></div>');
-		}else if(src && !src.match("baidu.com") && $(".download").length > 0){
-			$(".download").remove();
-		}
-		audio.audioEle.src = null;
-		audio.audioEle.src = src;
-		audio.audioEle.autoplay = true;
+		// this.audioEle.pause();
+		// $(".slider-range").css('width', '0%');
+		// $(".slider-handle").css('width', '0%');
+		// $(".icon-play").removeClass('icon-play').addClass('icon-pause');
+		// if(src && src.match("baidu.com") && $(".download").length <= 0) {
+		// 	$(".widget").prepend('<div class="download"><a class="ctrl-btn" hidefocus="true" title="下载"><i class="icon-download-alt"></i></a></div>');
+		// }else if(src && !src.match("baidu.com") && $(".download").length > 0){
+		// 	$(".download").remove();
+		// }
+		// setTimeout(function gao() {
+		// 	// audio.audioEle.src = null;
+		// 	audio.audioEle.src = src;
+		// 	audio.audioEle.autoplay = true;
+		// }, 1000);
 	},
 	setVolume: function(vol) {
 		if(this.audioEle.duration) {
@@ -118,38 +113,6 @@ var audio = {
 		if(typeof audio.onTimeUpdateHandle === 'function') {
 			audio.onTimeUpdateHandle();
 		}
-		// var cur = this.currentTime,
-		// 	dur = this.duration;
-		// $(".slider-range").css('width', cur / dur * 100 + "%");
-		// $(".slider-handle").css('left', cur / dur * parseInt($("#progressSlider").width()) + "px");
-		// $(".current-time").text(audio.formatTime(cur));
-		// try {
-		// 	var buf = this.buffered.end(0);
-		// 	$(".slider-buffer").css('width', buf / dur * 100 + '%');
-		// } catch (error) {console.log("音频缓冲错误：" + error);}
-		// if(cur == dur) {
-		// 	audio.onEnded();
-		// }
-		// if (audio.lrcData && audio.lrcStatus && audio.lrcLink != '') {
-		// 	var words = audio.lrcData.words,
-		// 	times = audio.lrcData.times,
-		// 	length = times.length,
-		// 	i = audio.lrcStep,
-		// 	lrcContent = audio.lrcContent,
-		// 	curTime = cur * 1000 | 0;
-		// 	for (; i < length; i++) {
-		// 		var step = times[i];
-		// 		if (curTime > step && curTime < times[i + 1]) {
-		// 			var lrcTime = lrcContent.find('[data-lrctime="' + step + '"]');
-		// 			var lrctop = lrcTime.attr("data-lrctop");
-		// 			lrcContent.animate({
-		// 				"margin-top": lrctop + "px"
-		// 			}, 400).find("p.cur").removeClass("cur");
-		// 			lrcTime.addClass("cur");
-		// 			break;
-		// 		}
-		// 	}
-		// }
 	},
 	onTimeUpdateHandle: function() {}
 };
