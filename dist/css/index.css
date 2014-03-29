@@ -668,8 +668,8 @@ header {
 }
 
 .layer-body-content {
-	height: 180px;
-	overflow: auto;
+	height: 170px;
+	/* overflow: auto; */
 }
 
 .layer-body-footer {

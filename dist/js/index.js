@@ -64,6 +64,14 @@ $(document).ready(function() {
 			if(!socket) {
 				// socket = io.connect('http://localhost:3000');
 				socket = io.connect('http://leolin.cc');
+
+				// C(socket.socket);
+				// if(!socket.socket.sessionid) {
+				// 	socket = null;
+				// 	$("#qrcodeLayer div.layer-body-title").empty();
+				// 	$("#qrcodeLayer div.layer-body-title").html("<h3>服务器关闭，获取失败！</h3>");
+				// 	return ;
+				// }
 				socket.on('connected', function(data) {
 					playerID = data.id;
 					$("#qrcodeLayer div.layer-body-title").empty();
@@ -102,12 +110,14 @@ $(document).ready(function() {
 								volume: remote.volume.value
 							});
 							if(!myAudio.audioEle.paused) {
-								if(localMusic.currentID >= 0 && onlineMusic.currentID <= -1) {
-									var musicInfo = localMusic.array[localMusic.currentID];
-									remote.playing(musicInfo);
-								}else if(localMusic.currentID <= -1 && onlineMusic.currentID >= 0) {
-									var musicInfo = onlineMusic.array[onlineMusic.currentID];
-									remote.playing(musicInfo);
+								if(localMusic.currentID >= 0 && onlineMusic.currentID <= -1 && offlineMusic.currentID <= -1) {
+									remote.playing(localMusic.array[localMusic.currentID]);
+								}else if(localMusic.currentID <= -1 && onlineMusic.currentID >= 0 && offlineMusic.currentID <= -1) {
+									remote.playing(onlineMusic.array[onlineMusic.currentID]);
+								}else if(localMusic.currentID <= -1 && onlineMusic.currentID <= -1 && offlineMusic.currentID >= 0) {
+									remote.playing(onlineMusic.array[onlineMusic.currentID]);
+								}else if(FM.currentID >= 0){
+									remote.playing(FM.songList[FM.currentID]);
 								}
 							}
 							$("#qrcodeLayer").hide();
@@ -115,6 +125,7 @@ $(document).ready(function() {
 						break;
 
 						case 'conn_error':
+							// socket = null;
 							$("#qrcodeLayer div.layer-body-title").empty();
 							$("#qrcodeLayer div.layer-body-title").html("<h3>远程遥控配对失败！</h3>");
 						break;
@@ -151,8 +162,9 @@ $(document).ready(function() {
 					};
 				});
 				socket.on('disconnect',function() {
+					// socket = null;
 					$(".scanTipsLayer").empty();
-					$(".scanTipsLayer").html("<h2 style='color: red;text-align: center;'>远程连接已断开</h2>").show(3000, function() {
+					$(".scanTipsLayer").html("<h2 style='color: green; background-color: #000; text-align: center;'>远程连接已断开</h2>").show(3000, function() {
 						$(this).hide(500);
 					});
 				});
@@ -170,7 +182,7 @@ $(document).ready(function() {
 			}
 		},
 		volume: {
-			value: 1,
+			value: 0.5,
 			muted: myAudio.audioEle.muted,
 			change: function() {
 				myAudio.setVolume(this.value);
@@ -781,7 +793,7 @@ $(document).ready(function() {
 			type: 'GET',
 			dataType: 'text',
 			success: function(res) {
-				C(res);
+				// C(res);
 				renderLrc(parseLrc(res));
 				myAudio.lrcStatus = true;
 			},
@@ -985,6 +997,8 @@ $(document).ready(function() {
 				mGalleryArray[mGalleryIndex].root.getFile(entries[i].fullPath, {create: false}, function(fileEntry) {
 					
 					fileEntry.file(function(file) {
+						var sizeMB = (file.size / 1024 / 1024).toFixed(2);
+						if(sizeMB <= 1.00) return false; // 过滤小于1MB音频文件
 						var galleryId = chrome.mediaGalleries.getMediaFileSystemMetadata(fileEntry.filesystem).galleryId;
 						var fullPath = fileEntry.fullPath;
 						var blob = file.slice(0, file.size, 'MIME');
@@ -1478,7 +1492,7 @@ $(document).ready(function() {
 	$("#toggle").on('click', 'li', function(event) {
 		event.preventDefault();
 		var listID = $(this).attr('data-catid');
-		C(listID);
+		// C(listID);
 		$(".leftbar-outer > div#allSong").addClass('list-active').siblings().removeClass('list-active');
 		$(this).addClass('toggle-active').siblings().removeClass('toggle-active');
 		$("#leftCol2-"+listID).show().siblings().hide();
@@ -2042,7 +2056,7 @@ $(document).ready(function() {
 		$("#searchInput").on('keydown', _this, function(e) {
 			if(e.keyCode == 13) {
 				var keyword = $.trim(_this.val());
-				C(keyword);
+				// C(keyword);
 				$.ajax({
 					url: 'http://mp3.baidu.com/dev/api/?tn=getinfo&ct=0&ie=utf-8&format=json&word='+keyword,
 					type: 'GET',
