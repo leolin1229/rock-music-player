@@ -214,7 +214,7 @@ $(document).ready(function() {
 		myAudio.audioEle.pause();
 		$(".slider-range").css('width', '0%');
 		$(".slider-handle").css('width', '0%');
-		$(".icon-play").removeClass('icon-play').addClass('icon-pause');
+		$("#leftPanel .icon-play").removeClass('icon-play').addClass('icon-pause');
 		if(src && src.match("baidu.com") && $(".download").length <= 0) {
 			$(".widget").prepend('<div class="download"><a class="ctrl-btn" hidefocus="true" title="下载"><i class="icon-download-alt"></i></a></div>');
 		}else if(src && !src.match("baidu.com") && $(".download").length > 0){
@@ -1771,6 +1771,7 @@ $(document).ready(function() {
 			if($(this).parent('#MyLikeList')) {
 				onlineMusic.currentID = getOnlineMusicID(musicInfo);
 				localMusic.currentID = -1;// 标记本地音乐不播放
+				offlineMusic.currentID = -1;// 标记离线音乐不播放
 			}
 			if(myAudio.lrcStatus) {
 				getLrcByAjax();
@@ -2180,6 +2181,28 @@ $(document).ready(function() {
 		});
 	});
 
+	$("#MyLikeList").on('click', '.song-add', function(event) {
+		event.preventDefault();
+		var parent = $(this).parent('.list-row');
+		var musicInfo = {
+			songLink: parent.attr('data-src'),
+			lrcLink: parent.attr('data-lrc'),
+			songName: parent.children('div.c0').text(),
+			artistName: parent.children('div.c1').text(),
+			albumName: parent.attr('data-albumname')
+		};
+		// C(musicInfo);
+		player.playOnlineMusic(musicInfo);
+		onlineMusic.currentID = getOnlineMusicID(musicInfo);
+		localMusic.currentID = -1;// 标记本地音乐不播放
+		offlineMusic.currentID = -1;// 标记离线音乐不播放
+		if(myAudio.lrcStatus) {
+			getLrcByAjax();
+		}
+		// 远程
+		remote.playing(musicInfo);
+	});
+
 	$(".widget").on('click', '.lrc', function(event) {
 		event.preventDefault();
 		var width = '302px';
@@ -2513,7 +2536,7 @@ $(document).ready(function() {
 	};
 
 	var downloadHandler = function(url, musicInfo) {
-		// C(musicInfo);
+		C(url);
 		$("#local").addClass('menu-active').siblings().removeClass('menu-active');
 		$("#localBody").show().siblings().hide();
 		$("#offlineList").addClass('list-active').siblings().removeClass('list-active');
@@ -2524,10 +2547,27 @@ $(document).ready(function() {
 			$("#OfflineList").empty();
 		}
 		$("#OfflineList").prepend(div);
+		offlineMusic.downloading = true;
+		// ajax
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', url);
 		xhr.responseType = "blob";
-		offlineMusic.downloading = true;
+// 		xhr.timeout = 5000;
+// 		xhr.ontimeout = function(){
+// 　　　　	$("#downloadingID_"+id+" progress").remove();
+// 			$("#downloadingID_"+id+" div.c2").html('资源连接超时');
+// 　　　　　　xhr.abort();
+// 			return ;
+// 　　	}
+		xhr.onreadystatechange = function(){
+			// C(xhr.readyState+" "+xhr.status);
+　　　　	if ( xhr.status != 200 ) {
+				$("#downloadingID_"+id+" progress").remove();
+				$("#downloadingID_"+id+" div.c2").html('资源出错');
+　　　　　　	xhr.abort();
+				return ;
+　　　　	}
+　　	};
 		xhr.onload = function() {
 			var size = this.response.size;
 			if(OfflineSpace.used + size > totalSpace) {
