@@ -762,7 +762,7 @@ $(document).ready(function() {
 				}
 			}
 		},
-		playOnlineMusic: function(obj) {
+		playOnlineMusic: function(obj, from) {
 			var tt = "#leftPanel .play-btn .play-pause a";
 			$(tt).children().removeClass('icon-play').addClass('icon-pause');
 			$(tt).attr('title', '暂停');
@@ -770,11 +770,22 @@ $(document).ready(function() {
 
 			myAudio.setSrc(obj.songLink);
 			myAudio.lrcLink = obj.lrcLink;
+			if(myAudio.lrcStatus) {
+				getLrcByAjax();
+			}
 
 			$("#playTitle .title .songname").text(obj.songName);
 			$("#playTitle .title .artist").text(obj.artistName);
-			localMusic.currentID = -1
-			onlineMusic.currentID = -1;
+
+			if(from == 'fm') {
+				localMusic.currentID = -1;
+				offlineMusic.currentID = -1;
+				onlineMusic.currentID = -1;
+			}else if(from == 'myLike') {
+				localMusic.currentID = -1;
+				offlineMusic.currentID = -1;
+				FM.currentID = -1;
+			}
 
 			notify(obj);
 			remote.playing(obj);
@@ -1768,11 +1779,12 @@ $(document).ready(function() {
 			}else {
 				searchPlaying = {};
 			}
-			player.playOnlineMusic(musicInfo);
+			player.playOnlineMusic(musicInfo, 'myLike');
 			if($(this).parent('#MyLikeList')) {
 				onlineMusic.currentID = getOnlineMusicID(musicInfo);
 				localMusic.currentID = -1;// 标记本地音乐不播放
 				offlineMusic.currentID = -1;// 标记离线音乐不播放
+				FM.currentID = -1;
 			}
 			if(myAudio.lrcStatus) {
 				getLrcByAjax();
@@ -1807,6 +1819,7 @@ $(document).ready(function() {
 			localMusic.currentID = getLocalMusicID(musicInfo);
 			onlineMusic.currentID = -1; // 标记在线音乐不播放
 			offlineMusic.currentID = -1; // 标记离线音乐不播放
+			FM.currentID = -1
 
 			if($(this).attr('data-lrc') == '') {
 				getLrcLinkByAjax(musicInfo, _this);
@@ -2193,10 +2206,12 @@ $(document).ready(function() {
 			albumName: parent.attr('data-albumname')
 		};
 		// C(musicInfo);
-		player.playOnlineMusic(musicInfo);
+		player.playOnlineMusic(musicInfo, 'myLike');
 		onlineMusic.currentID = getOnlineMusicID(musicInfo);
 		localMusic.currentID = -1;// 标记本地音乐不播放
 		offlineMusic.currentID = -1;// 标记离线音乐不播放
+		FM.currentID = -1;
+
 		if(myAudio.lrcStatus) {
 			getLrcByAjax();
 		}
@@ -2400,7 +2415,7 @@ $(document).ready(function() {
 				};
 				FM.currentID = 0;
 				// 播放
-				player.playOnlineMusic(FM.songList[0]);
+				player.playOnlineMusic(FM.songList[0], 'fm');
 			},
 			statusCode: {
 				404: function() {C("404啊")}
@@ -2537,7 +2552,7 @@ $(document).ready(function() {
 	};
 
 	var downloadHandler = function(url, musicInfo) {
-		C(url);
+		// C(url);
 		$("#local").addClass('menu-active').siblings().removeClass('menu-active');
 		$("#localBody").show().siblings().hide();
 		$("#offlineList").addClass('list-active').siblings().removeClass('list-active');
@@ -2626,6 +2641,7 @@ $(document).ready(function() {
 			}else if(!isEmptyObject(searchPlaying)) {
 				musicInfo = searchPlaying;
 			}
+			// C(musicInfo);
 			downloadHandler(musicInfo.songLink, musicInfo);
 		}
 	});
