@@ -1473,6 +1473,7 @@ $(document).ready(function() {
 		if(tabID == 'allSong') {
 			$("#toggle").slideToggle(400);
 		}else {
+			$("#toggle .toggle-active").removeClass('toggle-active');
 			$("#leftCol2-"+tabID).show().siblings().hide();
 			if(tabID == "recycleList") {
 				$("#RecycleList").empty();
