@@ -5,7 +5,9 @@ $(document).ready(function() {
 	var mGalleryIndex = 0;
 	var mGalleryReader = null;
 	var mGalleryDirectories = [];
-	var mGalleryArray = [];
+	var mGalleryArray = [],
+		mGalleryObj = {};
+
 	var audFormats = ['wav', 'mp3'];
 
 	var myAudio = audio.createPlayer();
@@ -14,7 +16,7 @@ $(document).ready(function() {
 		localMusicIndex = 0;// 本地音乐计数
 
 
-
+	var map = {}; // 歌曲去重
 	var localMusic = {
 		array: [],
 		artist: [],
@@ -986,7 +988,7 @@ $(document).ready(function() {
 				mGalleryIndex++;
 				if(mGalleryIndex < mGalleryArray.length) {
 					console.log('扫描下一首歌: ' + mGalleryArray[mGalleryIndex].name);
-					scanSongs(mGalleryArray[mGalleryIndex]);
+					scanSongs(mGalleryObj[mGalleryArray[mGalleryIndex]]);
 				}
 			}
 			return ;
@@ -994,13 +996,19 @@ $(document).ready(function() {
 		for(var i = 0; i < entries.length; i++) {
 
 			if(entries[i].isFile) {
-				mGalleryArray[mGalleryIndex].root.getFile(entries[i].fullPath, {create: false}, function(fileEntry) {
+				mGalleryObj[mGalleryArray[mGalleryIndex]].root.getFile(entries[i].fullPath, {create: false}, function(fileEntry) {
 					
 					fileEntry.file(function(file) {
 						var sizeMB = (file.size / 1024 / 1024).toFixed(2);
 						if(sizeMB <= 1.00) return false; // 过滤小于1MB音频文件
-						var galleryId = chrome.mediaGalleries.getMediaFileSystemMetadata(fileEntry.filesystem).galleryId;
-						var fullPath = fileEntry.fullPath;
+						var galleryId = chrome.mediaGalleries.getMediaFileSystemMetadata(fileEntry.filesystem).galleryId,
+							fullPath = fileEntry.fullPath;
+							// C(map[galleryId+"/"+fullPath]);
+						if(map[galleryId+"/"+fullPath] == true) {
+							return false;
+						}else {
+							map[galleryId+"/"+fullPath] = true;
+						}
 						var blob = file.slice(0, file.size, 'MIME');
 
 						var reader = new FileReader();
@@ -1060,7 +1068,8 @@ $(document).ready(function() {
 			if(localMusic.currentID < 0) return ;
 			$(".title .artist").text(localMusic.array[localMusic.currentID].artistName);
 			$(".title .songname").text(localMusic.array[localMusic.currentID].songName);
-			var gallery = mGalleryArray[galleryId - 1];
+			var gallery = mGalleryObj[galleryId.toString()];
+
 			gallery.root.getFile(fullPath, {create: false}, function(fileEntry) {
 				fileEntry.file(function(file) {
 					var src = window.webkitURL.createObjectURL(file);
@@ -1079,6 +1088,7 @@ $(document).ready(function() {
 		if(category != "recycleMusic") {
 			if(category == "localMusic") {
 				obj.artist = [];
+				map = {};
 			}
 			obj.array = [];
 		}else {
@@ -1088,17 +1098,11 @@ $(document).ready(function() {
 		// 遍历数据库已存在歌曲（包括回收站）
 		if(category == "localMusic") {
 			$.indexedDB("localMusicDB").objectStore("musicList").each(function(item) {
+				map[item.value.galleryId+"/"+item.value.fullPath] = true;
 				obj.array.push(item.value);
 				addItem(cnt, item.value, "#GalleryList");
 				cnt++;
 			}).done(function() {
-				// 遍历完成后回调函数
-				// if(obj.artist.length) {
-				// 	// 遍历歌手
-				// 	obj.artist.forEach(function(item, index, arr) {
-				// 		$(".singer-list").append('<div class="singer-list-row"><div class="singername"><span>'+item+'</span></div></div>');
-				// 	});
-				// }
 				obj.len = cnt;
 			});
 		}else if(category == "onlineMusic") {
@@ -1142,13 +1146,16 @@ $(document).ready(function() {
 			var str = "<span>";
 			results.forEach(function(item, index, arr) {
 				var mData = chrome.mediaGalleries.getMediaFileSystemMetadata(item);
+				// C(item);
 				if(mData) {
+					mGalleryArray.push(mData.galleryId);
+					mGalleryObj[mData.galleryId] = item;
 					str += mData.name;
 					str += "<br>";
 				}
 				str += "</span>";
 			});	
-			mGalleryArray = results;
+			// mGalleryArray = results;
 			mGalleryIndex = 0;
 
 			$("#openFileLayer .layer-body-content").html(str);
@@ -1675,6 +1682,10 @@ $(document).ready(function() {
 			if(idx) {
 				$.indexedDB("categoryDB").objectStore("categoryList").delete(idx).done(function() {
 					// TODO:这里还要删除该类别的歌曲
+					if(_this.parent().parent('li').attr('class') == 'toggle-active') {
+						$("#songList").addClass('toggle-active').siblings().removeClass('toggle-active');
+						$("#leftCol2-songList").show().siblings().hide();
+					}
 					_this.parent().parent('li').remove();
 				});
 			}
@@ -1682,11 +1693,11 @@ $(document).ready(function() {
 	});
 
 	// 显示该类别歌曲
-	$("#toggleList").on('click', 'li', function(event) {
+	$("#toggleList").on('click', '.cat-list-name', function(event) {
 		event.preventDefault();
-		var catID = $(this).attr('data-catid'),
+		var catID = $(this).parent('li').attr('data-catid'),
 			cnt = 0;
-		if($(this).attr('id') == 'songList') {
+		if($(this).parent('li').attr('id') == 'songList') {
 			$("#leftCol2-songList").show().siblings().hide();
 		}else {
 			$("#catMusicList").empty();
@@ -1724,7 +1735,7 @@ $(document).ready(function() {
 
 	$("#scanBtn").click(function(event) {
 		if(mGalleryArray.length > 0) {
-			scanSongs(mGalleryArray[0]);// DOMFileSystem of Array
+			scanSongs(mGalleryObj[mGalleryArray[0]]);// DOMFileSystem of Array
 		}
 		$(".shade").hide();
 		$(".layer").hide();
@@ -1932,7 +1943,7 @@ $(document).ready(function() {
 	});
 
 	$("#progressSlider").drag({
-	 	parent: ".panel",
+	 	parent: ".progress-wrapper",
 		handler: ".slider-handle",
 	 	range: ".slider-range",
 	 	bar: ".slider-bar",

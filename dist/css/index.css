@@ -10,7 +10,7 @@
 	border-width: 0;
 	border-style: solid;
 	border-radius: 6px;
-	background-color: black;
+	background-color: rgb(177, 177, 177);
 }
 
 ::-webkit-scrollbar-button {
@@ -657,18 +657,18 @@ header {
 
 .layer-body-title, .layer-body-content {
 	width: inherit;
-	padding: 0 15px;
+	padding: 0 3px;
 	font-size: 15px;
 	font-weight: bold;
 }
 
 .layer-body-title {
-	height: 30px;
+	height: 29px;
 	overflow: hidden;
 }
 
 .layer-body-content {
-	height: 170px;
+	height: 172px;
 	/* overflow: auto; */
 }
 
@@ -884,6 +884,7 @@ header {
 	top: 0;
 	right: 3px;
 	line-height: 32px;
+	z-index: 100;
 }
 
 #toggle ul li .edit-icons a {
