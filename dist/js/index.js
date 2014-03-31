@@ -165,10 +165,23 @@ $(document).ready(function() {
 				});
 				socket.on('disconnect',function() {
 					// socket = null;
-					$(".scanTipsLayer").empty();
-					$(".scanTipsLayer").html("<h2 style='color: green; background-color: #000; text-align: center;'>远程连接已断开</h2>").show(3000, function() {
-						$(this).hide(500);
-					});
+					// $(".scanTipsLayer").empty();
+					// $(".scanTipsLayer").html("<h2 style='color: green; background-color: #000; text-align: center;'>远程连接已断开</h2>").show(3000, function() {
+					// 	$(this).hide(500);
+					// });
+					var base = {
+						type: "basic",
+						title: '远程连接已断开',
+						message: '',
+						iconUrl: "../dist/img/music_player48.png"
+					};
+					notifyID++;
+					(function(id) {
+						setTimeout(function() {
+							chrome.notifications.clear(id, function() {});
+						}, 10000);
+					})("id" + notifyID);
+					chrome.notifications.create("id" + notifyID, base, function() {});
 				});
 			}else if(playerID) {
 				// 已生成二维码
@@ -2453,7 +2466,6 @@ $(document).ready(function() {
 				type: "basic",
 				title: obj.songName,
 				message: "歌手" + ":" + obj.artistName + "\r\n" + "专辑" + ":" + obj.albumName,
-				// iconUrl: obj.songPicSmall ? "../dist/img/music_player48.png" : "../dist/img/music_player48.png",
 				iconUrl: "../dist/img/music_player48.png"
 			};
 			notifyID++;
