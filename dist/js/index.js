@@ -2780,6 +2780,18 @@ $(document).ready(function() {
 		xhr.send();
 	};
 
+	$("#clearAll").on('click', this, function(event) {
+		event.preventDefault();
+		offlineMusicHandler.wipe(function() {
+			offlineFs.root.getDirectory(dirName, {create: true}, function(entry) {
+				DirEntry = entry;
+			});
+			$.indexedDB("offlineMusicDB").objectStore("musicList").clear().done(function() {
+				$("#OfflineList").empty().html('<h3>没有歌曲哦～</h3>');
+			});
+		});
+	});
+
 	$(".widget").on('click', '.download', function(event) {
 		event.preventDefault();
 		var url = myAudio.getSrc();

@@ -1074,3 +1074,23 @@ progress::-webkit-progress-bar {
 progress::-webkit-progress-value {
     background-color: #ffa100;
 }
+
+#clearAll {
+	margin-top: 4px;
+	float: right;
+	display: inline-block;
+	padding: 2px 10px;
+	font-size: 14px;
+	font-weight: normal;
+	text-align: center;
+	white-space: nowrap;
+	vertical-align: middle;
+	cursor: pointer;
+	border: 1px solid transparent;
+	border-radius: 3px;
+	-webkit-user-select: none;
+	font-family: inherit;
+	color: #fff;
+	background-color: #d2322d;
+	border-color: #ac2925;
+}
