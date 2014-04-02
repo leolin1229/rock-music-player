@@ -16,11 +16,13 @@ function Filter(element) {
 	this.filter = context.createBiquadFilter();
 	this.filter.type = this.filter.LOWPASS;
 	this.filter.frequency.value = 1000;
+	this.compressor = context.createDynamicsCompressor();
 }
 
 Filter.prototype.play = function() {
 	this.media.connect(this.filter);
-	this.filter.connect(context.destination);
+	this.filter.connect(this.compressor);
+	this.compressor.connect(context.destination);
 }
 
 Filter.prototype.changeFrequency = function(value) {
