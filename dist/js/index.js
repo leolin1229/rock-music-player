@@ -138,8 +138,11 @@ $(document).ready(function() {
 								socket.emit('control', {type: 'lrc', lrcWord: '找不到歌词哦～', webID: webID});
 								showLrc = false;
 							}
-							$("#qrcodeLayer").hide();
-							$(".shade").hide();
+							// $("#qrcodeLayer").hide();
+							// $("#shade").hide();
+							$("#qrcodeLayer").stop(true).animate({'top': '-275px', 'display': 'block'}, 500, 'swing', function() {
+								$("#shade").hide();
+							});
 						break;
 
 						case 'conn_error':
@@ -1539,8 +1542,8 @@ $(document).ready(function() {
 		$("#leftCol2-songList").show();
 		$("#leftCol2-singerList").hide();
 		$("#leftCol2-recycleList").hide();
-		$(".shade").hide();
-		$(".layer").hide();
+		$("#shade").hide();
+		// $(".layer").hide();
 		$(".scanTipsLayer").hide();
 		chrome.mediaGalleries.getMediaFileSystems({
 			interactive: "no"
@@ -1875,8 +1878,9 @@ $(document).ready(function() {
 			interactive: "if_needed"
 		}, getMusicInfo);
 
-		$(".shade").show();
-		$("#openFileLayer").show('slow');
+		$("#shade").show();
+		// $("#openFileLayer").show('slow');
+		$("#openFileLayer").stop(true).animate({'top': '5px', 'display': 'block'}, 500, 'swing');
 	});
 
 	$("#addBtn").click(function(event) {
@@ -1889,13 +1893,16 @@ $(document).ready(function() {
 		if(mGalleryArray.length > 0) {
 			scanSongs(mGalleryObj[mGalleryArray[0]]);// DOMFileSystem of Array
 		}
-		$(".shade").hide();
-		$(".layer").hide();
+		$("#openFileLayer").stop(true).animate({'top': '-275px', 'display': 'block'}, 500, 'swing', function() {
+			$("#shade").hide();
+		});
 	});
 
 	$(".cancel-btn").click(function(event) {
-		$(".shade").hide();
-		$(".layer").hide();
+		// $(".layer").hide();
+		$(".layer").stop(true).animate({'top': '-275px', 'display': 'block'}, 500, 'swing', function() {
+			$("#shade").hide();
+		});
 	});
 	var catIDPlaying = null;// 当前播放歌单ID
 
@@ -2400,8 +2407,9 @@ $(document).ready(function() {
 	// 二维码
 	$("#menu").on('click', '#QRCode', function(event) {
 		event.preventDefault();
-		$(".shade").show();
-		$("#qrcodeLayer").show('slow');
+		$("#shade").show();
+		// $("#qrcodeLayer").show('slow');
+		$("#qrcodeLayer").stop(true).animate({'top': '5px', 'display': 'block'}, 500, 'swing', function() {});
 		$("#qrcodeLayer div.layer-body-title").html("<h4>正在获取二维码......</h4>");
 		$("#qrcodeLayer div.layer-body-content").empty();
 		remote.handle();
@@ -2579,8 +2587,9 @@ $(document).ready(function() {
 
 	$("#menu").on('click', '#setting', function(event) {
 		event.preventDefault();
-		$("#settingLayer").show('slow');
-		$(".shade").show();
+		// $("#settingLayer").show('slow');
+		$("#shade").show();
+		$("#settingLayer").stop(true).animate({'top': '5px', 'display': 'block'}, 500, 'swing', function() {});
 	});
 
 	$("#settingLayer").on('click', '.ok-btn', function(event) {
@@ -2595,8 +2604,10 @@ $(document).ready(function() {
 			Setting.FMrate = val;
 			getFmByAjax(FM.curFm);
 		}
-		$("#settingLayer").hide();
-		$(".shade").hide();
+		// $("#settingLayer").hide();
+		$("#settingLayer").stop(true).animate({'top': '-275px', 'display': 'block'}, 500, 'swing', function() {
+			$("#shade").hide();
+		});
 	});
 
 	var notifyID = 0;
@@ -2840,6 +2851,20 @@ $(document).ready(function() {
 		});
 	});
 
+	$("#changeEQ").on('change', this, function(event) {
+		event.preventDefault();
+		myAudio.toggleFilter(this.checked);
+	});
+
+	$("#feq").on('change', this, function(event) {
+		event.preventDefault();
+		myAudio.changeFrequency($(this).val());
+	});
+
+	$("#qua").on('change', this, function(event) {
+		event.preventDefault();
+		myAudio.changeQuality($(this).val());
+	});
 	function isEmptyObject(obj) {
 		if(obj == null) return true;
 		if(obj.length === 0) return true;

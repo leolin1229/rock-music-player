@@ -468,7 +468,7 @@
 
 
 	<!-- 半透明遮蔽层 -->
-	<div class="shade"></div>
+	<div id="shade"></div>
 	<!-- 扫描文件弹出层 -->
 	<div id="openFileLayer" class="layer">
 		<div class="layer-body">
@@ -498,7 +498,8 @@
 		<div class="layer-body">
 			<div class="layer-body-title">设置</div>
 			<div class="layer-body-content">
-				<section>
+				<section id="settingAll">
+					<div id="gao">
 					<h4>桌面通知</h4>
 					<p>
 						<label for="settingNotify">
@@ -523,6 +524,17 @@
 							<span>高品质</span>
 						</label>
 					</p>
+					</div>
+					<div id="foo">
+						<input type="checkbox" id="changeEQ">
+						<label for="changeEQ">调整音效</label>
+						<div class="setting_input">
+							<input id="feq" type="range" min="0" max="1" step="0.01" value="1">频率
+						</div>
+						<div class="setting_input">
+							<input id="qua" type="range" min="0" max="1" step="0.01" value="0">音质
+						</div>
+					</div>
 				</section>
 			</div>
 			<div class="layer-body-footer">
