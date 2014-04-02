@@ -184,11 +184,6 @@ $(document).ready(function() {
 					};
 				});
 				socket.on('disconnect',function() {
-					// socket = null;
-					// $(".scanTipsLayer").empty();
-					// $(".scanTipsLayer").html("<h2 style='color: green; background-color: #000; text-align: center;'>远程连接已断开</h2>").show(3000, function() {
-					// 	$(this).hide(500);
-					// });
 					var base = {
 						type: "basic",
 						title: '远程连接已断开',
@@ -199,7 +194,7 @@ $(document).ready(function() {
 					(function(id) {
 						setTimeout(function() {
 							chrome.notifications.clear(id, function() {});
-						}, 10000);
+						}, 5000);
 					})("id" + notifyID);
 					chrome.notifications.create("id" + notifyID, base, function() {});
 				});
@@ -1944,6 +1939,20 @@ $(document).ready(function() {
 			if($(this).parent('#CatMusicList').length > 0) { // 歌单
 				if($("#toggleList .toggle-active").length > 0) {
 					catIDPlaying = $("#toggleList .toggle-active").attr('data-catid');
+					// 通知
+					var base = {
+						type: "basic",
+						title: "正在播放歌单：",
+						message: "【"+$("#toggleList .toggle-active p").text()+"】",
+						iconUrl: "../dist/img/music_player48.png"
+					};
+					notifyID++;
+					(function(id) {
+						setTimeout(function() {
+							chrome.notifications.clear(id, function() {});
+						}, 5000);
+					})("id" + notifyID);
+					chrome.notifications.create("id" + notifyID, base, function() {});
 				}else {
 					catIDPlaying = null;
 				}
@@ -2623,7 +2632,7 @@ $(document).ready(function() {
 			(function(id) {
 				setTimeout(function() {
 					chrome.notifications.clear(id, function() {});
-				}, 10000);
+				}, 5000);
 			})("id" + notifyID);
 			chrome.notifications.create("id" + notifyID, base, function() {});
 		}
