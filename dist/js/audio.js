@@ -14,15 +14,20 @@ var QUAL_MUL = 30;
 function Filter(element) {
 	this.media = context.createMediaElementSource(element);
 	this.filter = context.createBiquadFilter();
+	this.compressor = context.createDynamicsCompressor();
+	/**/
 	this.filter.type = this.filter.LOWPASS;
 	this.filter.frequency.value = 1000;
-	this.compressor = context.createDynamicsCompressor();
 }
 
-Filter.prototype.play = function() {
-	this.media.connect(this.filter);
-	this.filter.connect(this.compressor);
-	this.compressor.connect(context.destination);
+Filter.prototype.play = function(flag) {
+	if(!flag) {
+		this.media.connect(context.destination);
+	}else {
+		this.media.connect(this.filter);
+		this.filter.connect(this.compressor);
+		this.compressor.connect(context.destination);
+	}
 }
 
 Filter.prototype.changeFrequency = function(value) {
@@ -45,15 +50,6 @@ Filter.prototype.changeQuality = function(value) {
 Filter.prototype.toggleFilter = function(checked) {
   this.media.disconnect(0);
   this.filter.disconnect(0);
-  // Check if we want to enable the filter.
-  if (checked) {
-    // Connect through the filter.
-    this.media.connect(this.filter);
-    this.filter.connect(context.destination);
-  }else {
-    // Otherwise, connect directly.
-    this.media.connect(context.destination);
-  }
 };
 
 var audio = {
@@ -93,7 +89,7 @@ var audio = {
 		$(".title.songname").text('');
 		$(".title.artist").text('');
 		this.filter = new Filter(this.audioEle);
-		this.filter.play();
+		this.filter.play(false);
 		return this;
 	},
 	// 改变低通滤波阀值
@@ -105,6 +101,11 @@ var audio = {
 	},
 	toggleFilter: function(checked) {
 		this.filter.toggleFilter(checked);
+		if (checked) {
+			this.filter.play(true);
+		}else {
+			this.filter.play(false);
+		}
 	},
 	onCanplaythrough:function() {
 		// C("onCanplaythrough");

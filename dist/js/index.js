@@ -140,7 +140,7 @@ $(document).ready(function() {
 							}
 							// $("#qrcodeLayer").hide();
 							// $("#shade").hide();
-							$("#qrcodeLayer").stop(true).animate({'top': '-275px', 'display': 'block'}, 500, 'swing', function() {
+							$("#qrcodeLayer").stop(true).animate({'top': '-275px', 'display': 'block'}, 400, 'swing', function() {
 								$("#shade").hide();
 							});
 						break;
@@ -1875,7 +1875,7 @@ $(document).ready(function() {
 
 		$("#shade").show();
 		// $("#openFileLayer").show('slow');
-		$("#openFileLayer").stop(true).animate({'top': '5px', 'display': 'block'}, 500, 'swing');
+		$("#openFileLayer").stop(true).animate({'top': '5px', 'display': 'block'}, 400, 'swing');
 	});
 
 	$("#addBtn").click(function(event) {
@@ -1888,14 +1888,14 @@ $(document).ready(function() {
 		if(mGalleryArray.length > 0) {
 			scanSongs(mGalleryObj[mGalleryArray[0]]);// DOMFileSystem of Array
 		}
-		$("#openFileLayer").stop(true).animate({'top': '-275px', 'display': 'block'}, 500, 'swing', function() {
+		$("#openFileLayer").stop(true).animate({'top': '-275px', 'display': 'block'}, 400, 'swing', function() {
 			$("#shade").hide();
 		});
 	});
 
 	$(".cancel-btn").click(function(event) {
 		// $(".layer").hide();
-		$(".layer").stop(true).animate({'top': '-275px', 'display': 'block'}, 500, 'swing', function() {
+		$(".layer").stop(true).animate({'top': '-275px', 'display': 'block'}, 400, 'swing', function() {
 			$("#shade").hide();
 		});
 	});
@@ -2244,37 +2244,34 @@ $(document).ready(function() {
 	});
 
 	// 搜索框
-	$("#search").on('focus', '#searchInput', function(event) {
-		var _this = $(this);
-		$("#searchInput").on('keydown', _this, function(e) {
-			if(e.keyCode == 13) {
-				var keyword = $.trim(_this.val());
-				// C(keyword);
-				$.ajax({
-					url: 'http://mp3.baidu.com/dev/api/?tn=getinfo&ct=0&ie=utf-8&format=json&word='+keyword,
-					type: 'GET',
-					dataType: 'json',
-					beforeSend: function() {
-						$("#online").addClass('menu-active').siblings().removeClass('menu-active');
-						$("#search-result").addClass('list-active').siblings().removeClass('list-active');
-						$("#SearchList").empty().html('<h3>正在搜索～</h3>');
-						$("#onlineBody").show().siblings().hide();
-						$("#leftCol2-search-result").show().siblings().hide();
-					},
-					success: function(res) {
-						if(!res.length) {
-							$("#SearchList").empty().html('<h3>没有结果哦～</h3>');
-						}else {
-							$("#SearchList").empty();
-							res.forEach(function(item, index, arr) {
-								getOnlineMusicByAjax(0, item.song_id);
-							});
-						}
-					},
-					error: function(error) {}
-				});
-			}
-		});
+	$("#searchInput").on('keydown', this, function(e) {
+		if(e.keyCode == 13) {
+			var keyword = $.trim($(this).val());
+			C(keyword);
+			$.ajax({
+				url: 'http://mp3.baidu.com/dev/api/?tn=getinfo&ct=0&ie=utf-8&format=json&word='+keyword,
+				type: 'GET',
+				dataType: 'json',
+				beforeSend: function() {
+					$("#online").addClass('menu-active').siblings().removeClass('menu-active');
+					$("#search-result").addClass('list-active').siblings().removeClass('list-active');
+					$("#SearchList").empty().html('<h3>正在搜索～</h3>');
+					$("#onlineBody").show().siblings().hide();
+					$("#leftCol2-search-result").show().siblings().hide();
+				},
+				success: function(res) {
+					if(!res.length) {
+						$("#SearchList").empty().html('<h3>没有结果哦～</h3>');
+					}else {
+						$("#SearchList").empty();
+						res.forEach(function(item, index, arr) {
+							getOnlineMusicByAjax(0, item.song_id);
+						});
+					}
+				},
+				error: function(error) {}
+			});
+		}
 	});
 
 	function getOnlineMusicByAjax(index, songID) {
@@ -2418,7 +2415,7 @@ $(document).ready(function() {
 		event.preventDefault();
 		$("#shade").show();
 		// $("#qrcodeLayer").show('slow');
-		$("#qrcodeLayer").stop(true).animate({'top': '5px', 'display': 'block'}, 500, 'swing', function() {});
+		$("#qrcodeLayer").stop(true).animate({'top': '5px', 'display': 'block'}, 400, 'swing', function() {});
 		$("#qrcodeLayer div.layer-body-title").html("<h4>正在获取二维码......</h4>");
 		$("#qrcodeLayer div.layer-body-content").empty();
 		remote.handle();
@@ -2598,7 +2595,7 @@ $(document).ready(function() {
 		event.preventDefault();
 		// $("#settingLayer").show('slow');
 		$("#shade").show();
-		$("#settingLayer").stop(true).animate({'top': '5px', 'display': 'block'}, 500, 'swing', function() {});
+		$("#settingLayer").stop(true).animate({'top': '5px', 'display': 'block'}, 400, 'swing', function() {});
 	});
 
 	$("#settingLayer").on('click', '.ok-btn', function(event) {
@@ -2614,7 +2611,7 @@ $(document).ready(function() {
 			getFmByAjax(FM.curFm);
 		}
 		// $("#settingLayer").hide();
-		$("#settingLayer").stop(true).animate({'top': '-275px', 'display': 'block'}, 500, 'swing', function() {
+		$("#settingLayer").stop(true).animate({'top': '-275px', 'display': 'block'}, 400, 'swing', function() {
 			$("#shade").hide();
 		});
 	});
