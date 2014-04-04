@@ -45,7 +45,7 @@ li:hover, li:active, li {
 }
 
 header, #menu, #footer, #playwrapper {
-	position:fixed; 
+	/* position:fixed; */
 	width:100%; 
 	left:0; 
 	overflow:hidden;
@@ -1096,16 +1096,20 @@ progress::-webkit-progress-value {
 }
 
 #gao {
+	/*display: inline-block;*/
 	float: left;
 }
 
 #foo {
-	float: right;
-	margin-top: 15px;
+	/*display: inline-block;*/
+	vertical-align: top;
+	float: left;
+	/*margin-top: 15px;*/
+	/*overflow: auto;*/
 }
 .setting_input input[type="range"]{
 	position:relative;
-	width: 157px;
+	width: 141px;
     height: 10px;
 	margin: 15px 4px;
 	-webkit-appearance: none;

@@ -243,6 +243,7 @@ $(document).ready(function() {
 		$(".slider-range").css('width', '0%');
 		$(".slider-handle").css('width', '0%');
 		$("#leftPanel .icon-play").removeClass('icon-play').addClass('icon-pause');
+
 		if(src && src.match("baidu.com") && $(".download").length <= 0) {
 			$(".widget").prepend('<div class="download"><a class="ctrl-btn" hidefocus="true" title="下载"><i class="icon-download-alt"></i></a></div>');
 		}else if(src && !src.match("baidu.com") && $(".download").length > 0){
@@ -424,12 +425,7 @@ $(document).ready(function() {
 					}else if(offlineMusic.len == 1) {
 						offlineMusic.currentID = 0;
 					}
-					myAudio.setSrc(offlineMusic.array[offlineMusic.currentID].songLink);
-					myAudio.lrcLink = offlineMusic.array[offlineMusic.currentID].lrcLink;
-
-					$(".title .artist").text(offlineMusic.array[offlineMusic.currentID].artistName);
-					$(".title .songname").text(offlineMusic.array[offlineMusic.currentID].songName);
-
+					offlineMusicHandler.readFileAsUrl(offlineMusic.array[offlineMusic.currentID].songName, offlineMusic.array[offlineMusic.currentID], readOfflineCallBack);
 					notify(offlineMusic.array[offlineMusic.currentID]);
 					// 远程
 					remote.playing(offlineMusic.array[offlineMusic.currentID]);
@@ -493,13 +489,8 @@ $(document).ready(function() {
 			}else if(localMusic.currentID <= -1 && onlineMusic.currentID <= -1 && offlineMusic.currentID >= 0) {
 				// offline
 				offlineMusic.currentID = ((offlineMusic.currentID + 1) >= offlineMusic.len) ? 0 : (offlineMusic.currentID + 1);
-				
-				myAudio.setSrc(offlineMusic.array[offlineMusic.currentID].songLink);
-				myAudio.lrcLink = offlineMusic.array[offlineMusic.currentID].lrcLink;
 
-				$(".title .artist").text(offlineMusic.array[offlineMusic.currentID].artistName);
-				$(".title .songname").text(offlineMusic.array[offlineMusic.currentID].songName);
-
+				offlineMusicHandler.readFileAsUrl(offlineMusic.array[offlineMusic.currentID].songName, offlineMusic.array[offlineMusic.currentID], readOfflineCallBack);
 				notify(offlineMusic.array[offlineMusic.currentID]);
 				// 远程
 				remote.playing(offlineMusic.array[offlineMusic.currentID]);
@@ -587,10 +578,7 @@ $(document).ready(function() {
 						}else if(offlineMusic.len == 1) {
 							offlineMusic.currentID = 0;
 						}
-						myAudio.setSrc(offlineMusic.array[offlineMusic.currentID].songLink);
-						myAudio.lrcLink = offlineMusic.array[offlineMusic.currentID].lrcLink;
-						$(".title .artist").text(offlineMusic.array[offlineMusic.currentID].artistName);
-						$(".title .songname").text(offlineMusic.array[offlineMusic.currentID].songName);
+						offlineMusicHandler.readFileAsUrl(offlineMusic.array[offlineMusic.currentID].songName, offlineMusic.array[offlineMusic.currentID], readOfflineCallBack);
 						
 						notify(offlineMusic.array[offlineMusic.currentID]);
 						// 远程
@@ -658,11 +646,7 @@ $(document).ready(function() {
 				}else if(localMusic.currentID <= -1 && onlineMusic.currentID <= -1 && offlineMusic.currentID >= 0) {
 					// offline
 					offlineMusic.currentID = ((offlineMusic.currentID - 1) < 0) ? (offlineMusic.len - 1) : (offlineMusic.currentID - 1);
-					
-					myAudio.setSrc(offlineMusic.array[offlineMusic.currentID].songLink);
-					myAudio.lrcLink = offlineMusic.array[offlineMusic.currentID].lrcLink;
-					$(".title .artist").text(offlineMusic.array[offlineMusic.currentID].artistName);
-					$(".title .songname").text(offlineMusic.array[offlineMusic.currentID].songName);
+					offlineMusicHandler.readFileAsUrl(offlineMusic.array[offlineMusic.currentID].songName, offlineMusic.array[offlineMusic.currentID], readOfflineCallBack);
 
 					notify(offlineMusic.array[offlineMusic.currentID]);
 					// 远程
@@ -753,11 +737,7 @@ $(document).ready(function() {
 						}else if(offlineMusic.len == 1) {
 							offlineMusic.currentID = 0;
 						}
-						myAudio.setSrc(offlineMusic.array[offlineMusic.currentID].songLink);
-						myAudio.lrcLink = offlineMusic.array[offlineMusic.currentID].lrcLink;
-						$(".title .artist").text(offlineMusic.array[offlineMusic.currentID].artistName);
-						$(".title .songname").text(offlineMusic.array[offlineMusic.currentID].songName);
-
+						offlineMusicHandler.readFileAsUrl(offlineMusic.array[offlineMusic.currentID].songName, offlineMusic.array[offlineMusic.currentID], readOfflineCallBack);
 						notify(offlineMusic.array[offlineMusic.currentID]);
 						// 远程
 						remote.playing(offlineMusic.array[offlineMusic.currentID]);
@@ -823,11 +803,7 @@ $(document).ready(function() {
 				}else if(localMusic.currentID <= -1 && onlineMusic.currentID <= -1 && offlineMusic.currentID >= 0) {
 					// offline
 					offlineMusic.currentID = ((offlineMusic.currentID + 1) >= offlineMusic.len) ? 0 : (offlineMusic.currentID + 1);
-					myAudio.setSrc(offlineMusic.array[offlineMusic.currentID].songLink);
-					myAudio.lrcLink = offlineMusic.array[offlineMusic.currentID].lrcLink;
-					$(".title .artist").text(offlineMusic.array[offlineMusic.currentID].artistName);
-					$(".title .songname").text(offlineMusic.array[offlineMusic.currentID].songName);
-
+					offlineMusicHandler.readFileAsUrl(offlineMusic.array[offlineMusic.currentID].songName, offlineMusic.array[offlineMusic.currentID], readOfflineCallBack);
 					notify(offlineMusic.array[offlineMusic.currentID]);
 					// 远程
 					remote.playing(offlineMusic.array[offlineMusic.currentID]);
@@ -873,11 +849,7 @@ $(document).ready(function() {
 					remote.playing(onlineMusic.array[onlineMusic.currentID]);
 				}else if(offlineMusic.len > 0) {
 					offlineMusic.currentID = 0;
-					myAudio.setSrc(offlineMusic.array[offlineMusic.currentID].songLink);
-					myAudio.lrcLink = offlineMusic.array[offlineMusic.currentID].lrcLink;
-					$(".title .artist").text(offlineMusic.array[offlineMusic.currentID].artistName);
-					$(".title .songname").text(offlineMusic.array[offlineMusic.currentID].songName);
-
+					offlineMusicHandler.readFileAsUrl(offlineMusic.array[offlineMusic.currentID].songName, offlineMusic.array[offlineMusic.currentID], readOfflineCallBack);
 					notify(offlineMusic.array[offlineMusic.currentID]);
 					remote.playing(offlineMusic.array[offlineMusic.currentID]);
 				}
@@ -1173,7 +1145,6 @@ $(document).ready(function() {
 							localMusicIndex++;
 							localMusic.len = localMusicIndex;
 							var musicInfo = Mp3.getMp3Info(galleryId, result, fullPath);
-							// C(musicInfo);
 							$.indexedDB("localMusicDB").objectStore("musicList").add(musicInfo).done(function(res, event) {
 								localMusic.array.push(musicInfo);
 								addItem(localMusicIndex, musicInfo, "#GalleryList");
@@ -1222,6 +1193,21 @@ $(document).ready(function() {
 		}
 	}
 
+	function readOfflineCallBack(item, objectURL) {
+		var tt = ".play-btn .play-pause a";
+		$(tt).children().removeClass('icon-play').addClass('icon-pause');
+		$(tt).attr('title', '暂停');
+		$(tt).parent().removeClass('play').addClass('pause');
+
+		myAudio.setSrc(objectURL);
+		myAudio.play();
+		myAudio.lrcLink = item.lrcLink;
+
+		$(".title .songname").text(item.songName);
+		$(".title .artist").text(item.artistName);
+
+		searchPlaying = {};
+	}
 ///////////////////////////////////////////////////////////////////////////////////////change
 
 	function addItemList(obj, category) {
@@ -1986,7 +1972,7 @@ $(document).ready(function() {
 			localMusic.currentID = getLocalMusicID(musicInfo);
 			onlineMusic.currentID = -1; // 标记在线音乐不播放
 			offlineMusic.currentID = -1; // 标记离线音乐不播放
-			FM.currentID = -1
+			FM.currentID = -1;
 
 			if($(this).attr('data-lrc') == '') {
 				getLrcLinkByAjax(musicInfo, _this);
@@ -2012,19 +1998,18 @@ $(document).ready(function() {
 		event.preventDefault();
 		var _this = $(this);
 		myAudio.lrcLink = '';
-		offlineMusicHandler.readFileAsUrl(_this.attr('data-songname'), function(fuck, objectURL) {
-			var tt = ".play-btn .play-pause a";
-			$(tt).children().removeClass('icon-play').addClass('icon-pause');
-			$(tt).attr('title', '暂停');
-			$(tt).parent().removeClass('play').addClass('pause');
-			var musicInfo = {
+		var musicInfo = {
 				songName: _this.attr('data-songname'),
 				artistName: _this.attr('data-artistname'),
 				albumName: _this.attr('data-albumname'),
 				lrcLink: _this.attr('data-lrc')
-			};
+		};
+		offlineMusicHandler.readFileAsUrl(_this.attr('data-songname'), musicInfo, function(item, objectURL) {
+			var tt = ".play-btn .play-pause a";
+			$(tt).children().removeClass('icon-play').addClass('icon-pause');
+			$(tt).attr('title', '暂停');
+			$(tt).parent().removeClass('play').addClass('pause');
 
-			offlineMusic.currentID = getOfflineMusicID(musicInfo);
 
 			myAudio.setSrc(objectURL);
 			myAudio.play();
@@ -2037,6 +2022,11 @@ $(document).ready(function() {
 			$(".title .songname").text(musicInfo.songName);
 			$(".title .artist").text(musicInfo.artistName);
 
+			offlineMusic.currentID = getOfflineMusicID(musicInfo);
+			onlineMusic.currentID = -1;
+			localMusic.currentID = -1;// 标记本地音乐不播放
+			FM.currentID = -1;
+			catIDPlaying = null;
 			searchPlaying = {};
 		});
 	});
@@ -2247,7 +2237,6 @@ $(document).ready(function() {
 	$("#searchInput").on('keydown', this, function(e) {
 		if(e.keyCode == 13) {
 			var keyword = $.trim($(this).val());
-			C(keyword);
 			$.ajax({
 				url: 'http://mp3.baidu.com/dev/api/?tn=getinfo&ct=0&ie=utf-8&format=json&word='+keyword,
 				type: 'GET',
@@ -2705,11 +2694,11 @@ $(document).ready(function() {
 				});
 			});
 		},
-		readFileAsUrl: function(fileName, callback) {
+		readFileAsUrl: function(fileName, item, callback) {
 			offlineFs.root.getFile(dirName + "/" + fileName + ".mp3", {}, function(fileEntry) {
 				fileEntry.file(function(file) {
 					var objectURL = window.webkitURL.createObjectURL(file);
-					callback(null, objectURL);
+					callback(item, objectURL);
 				});
 			});
 		},
