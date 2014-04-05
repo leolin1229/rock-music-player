@@ -2673,6 +2673,7 @@ $(document).ready(function() {
 	var offlineMusicHandler = {
 		writeFile: function(fileName, blob, callback) {
 			offlineFs.root.getFile(dirName + "/" + fileName + ".mp3", {create: true}, function(fileEntry) {
+				C(fileEntry);
 				fileEntry.createWriter(function(fileWriter) {
 					fileWriter.onwriteend = function(Y) {
 						console.log("Write completed.");
@@ -2715,6 +2716,30 @@ $(document).ready(function() {
 		$("#localBody").show().siblings().hide();
 		$("#offlineList").addClass('list-active').siblings().removeClass('list-active');
 		$("#leftCol2-offlineList").show().siblings().hide();
+		var isExist = false;
+		offlineMusic.array.forEach(function(item, index, arr) {
+			if(cmpOnlineMusicObj(musicInfo, item)) {
+				isExist = true;
+				return false;
+			}
+		});
+		if(isExist) {
+			var base = {
+				type: "basic",
+				title: '歌曲已存在离线曲库～',
+				message: '',
+				iconUrl: "../dist/img/music_player48.png"
+			};
+			notifyID++;
+			(function(id) {
+				setTimeout(function() {
+					chrome.notifications.clear(id, function() {});
+				}, 5000);
+			})("id" + notifyID);
+			chrome.notifications.create("id" + notifyID, base, function() {});
+			return ;
+		}
+
 		var id = getRandomString(4);
 		var div = $('<div id="downloadingID_' + id + '" class="offline-list-row"><div class="list-cell c0">'+ musicInfo.songName +'</div><div class="list-cell c1">'+ musicInfo.artistName +'</div><div class="list-cell c2"><progress max="100" value="0" style="width: 20em"></progress></div></div>');
 		if($("#OfflineList h3").length > 0) {
@@ -2794,6 +2819,10 @@ $(document).ready(function() {
 			});
 			$.indexedDB("offlineMusicDB").objectStore("musicList").clear().done(function() {
 				$("#OfflineList").empty().html('<h3>没有歌曲哦～</h3>');
+				offlineMusic.array = [];
+				offlineMusic.len = 0;
+				offlineMusic.currentID = -1;
+				offlineMusic.downloading = false;
 			});
 		});
 	});
