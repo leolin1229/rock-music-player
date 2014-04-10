@@ -2058,15 +2058,16 @@ $(document).ready(function() {
 					$(tt).parent().removeClass('pause').addClass('play');
 					myAudio.pause();	
 				}else {
-					if(localMusic.currentID <= -1 && onlineMusic.currentID <= -1) {
-						$(tt).children().removeClass('icon-play').addClass('icon-pause');
-						$(tt).attr('title', '暂停');
-						$(tt).parent().removeClass('play').addClass('pause');
+					$(tt).children().removeClass('icon-play').addClass('icon-pause');
+					$(tt).attr('title', '暂停');
+					$(tt).parent().removeClass('play').addClass('pause');
+					if(localMusic.currentID <= -1 
+						&& onlineMusic.currentID <= -1 
+						&& offlineMusic.currentID <= -1
+						&& FM.currentID <= -1
+						&& isEmptyObject(searchPlaying)) {
 						player.playPause();
 					}else {
-						$(tt).children().removeClass('icon-play').addClass('icon-pause');
-						$(tt).attr('title', '暂停');
-						$(tt).parent().removeClass('play').addClass('pause');
 						myAudio.play();
 					}
 				}
