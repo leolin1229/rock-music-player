@@ -17,7 +17,7 @@ function Filter(element) {
 	this.compressor = context.createDynamicsCompressor();
 	/**/
 	this.filter.type = this.filter.LOWPASS;
-	this.filter.frequency.value = 1000;
+	this.filter.frequency.value = context.sampleRate;
 }
 
 Filter.prototype.play = function(flag) {
@@ -30,14 +30,17 @@ Filter.prototype.play = function(flag) {
 	}
 }
 
+// range从0到1，通过指数形式映射到100Hz-22050Hz频率范围
+// 基于公式maxValue*((maxValue/minValue)^(val-1))
 Filter.prototype.changeFrequency = function(value) {
-  	// Clamp the frequency between the minimum value (40 Hz) and half of the
-  	// sampling rate.
-  	var minValue = 40;
-  	var maxValue = context.sampleRate / 2;
+  	var minValue = 100;//最低频率为100Hz
+  	var maxValue = context.sampleRate / 2;//最高频率为22050Hz
+
   	// Logarithm (base 2) to compute how many octaves fall in the range.
+  	// 求以2为低的对数中八度下降的范围
   	var numberOfOctaves = Math.log(maxValue / minValue) / Math.LN2;
   	// Compute a multiplier from 0 to 1 based on an exponential scale.
+  	// 计算乘数从0到1的基础上的指数规模
   	var multiplier = Math.pow(2, numberOfOctaves * (value - 1.0));
   	// Get back to the frequency value between min and max.
   	this.filter.frequency.value = maxValue * multiplier;

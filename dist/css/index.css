@@ -924,7 +924,7 @@ header {
 	margin: 5px 55px;
 }
 
-#addCat p {
+#addCat > p {
 	border: 1px solid #cececf;
 	border-radius: 4px;
 	width: 53px;
@@ -932,6 +932,10 @@ header {
 	line-height: 20px;
 	color: #333;
 	margin: 0;
+}
+
+#addCat > p:hover {
+	color: #008191;
 }
 
 #addCat p span {

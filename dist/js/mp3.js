@@ -72,15 +72,15 @@ var Mp3 = {
         var getInfoByString = function(str, index) {
         	// size
         	var size = getFrameSize(str.substr(index+4, 4)),
-        	substr = str.substr(index+13, size-3);
+                substr = str.substr(index+13, size-3);
 
         	var ans = '';
         	for (var i = 0; i < substr.length; i+=2) {
         		var c1 = substr.charCodeAt(i).toString(16),
         			c2 = substr.charCodeAt(i+1).toString(16);
-        			c1 = padLeft(c1, '0', 2);
-        			c2 = padLeft(c2, '0', 2);
-        			ans += String.fromCharCode(parseInt(c2+c1, 16).toString(10));
+        		c1 = padLeft(c1, '0', 2);
+        		c2 = padLeft(c2, '0', 2);
+        		ans += String.fromCharCode(parseInt(c2+c1, 16).toString(10));
         	};
         	return ans;
         };

@@ -8,12 +8,12 @@ $(document).ready(function() {
 	var mGalleryArray = [],
 		mGalleryObj = {};
 
-	var audFormats = ['wav', 'mp3'];
+	var audFormats = ['mp3'];
 
 	var myAudio = audio.createPlayer();
 
-	var recycleMusic = [],// 回收站歌曲
-		localMusicIndex = 0;// 本地音乐计数
+	var recycleMusic = [];// 回收站歌曲
+		// localMusicIndex = 0;// 本地音乐计数
 
 
 	var map = {}; // 歌曲去重
@@ -290,15 +290,15 @@ $(document).ready(function() {
 					curTime = cur * 1000 | 0;
 				
 				for (var i = 0; i < length; i++) {
-					var step = times[i];
-					if (curTime > step && curTime < times[i + 1]) {
-						var child = lrcContent.children('#step_'+step);
-						var lrcTime = child.attr('data-lrctime');// var lrcTime = lrcContent.find('[data-lrctime="' + step + '"]');
-						var lrctop = child.attr("data-lrctop");
+					if (curTime > times[i] && curTime < times[i + 1]) {
+						var child = lrcContent.children('#step_'+times[i]),
+							lrcTime = child.attr('data-lrctime'),
+							lrctop = child.attr("data-lrctop");
 						lrcContent.animate({
 							"margin-top": lrctop + "px"
 						}, 100).find("p.cur").removeClass("cur");
 						child.addClass("cur");
+						myAudio.lrcStep = i;
 						break;
 					}
 				}
@@ -334,22 +334,20 @@ $(document).ready(function() {
 		}
 		if (myAudio.lrcData && myAudio.lrcStatus && myAudio.lrcLink != '') {
 			var words = myAudio.lrcData.words,
-			times = myAudio.lrcData.times,
-			length = times.length,
-			i = myAudio.lrcStep,
-			lrcContent = myAudio.lrcContent,
-			curTime = cur * 1000 | 0;
-			for (; i < length; i++) {
-				var step = times[i];
-				if (curTime > step && curTime < times[i + 1]) {
-					var child = lrcContent.children('#step_'+step);
-					var lrcTime = child.attr('data-lrctime');
-					// var lrcTime = lrcContent.find('[data-lrctime="' + step + '"]');
-					var lrctop = child.attr("data-lrctop");
+				times = myAudio.lrcData.times,
+				length = times.length,
+				lrcContent = myAudio.lrcContent,
+				curTime = cur * 1000 | 0;
+			for (var i = myAudio.lrcStep; i < length; i++) {
+				if (curTime > times[i] && curTime < times[i + 1]) {
+					var child = lrcContent.children('#step_'+times[i]),
+					 	lrcTime = child.attr('data-lrctime'),
+					 	lrctop = child.attr("data-lrctop");
 					lrcContent.animate({
 						"margin-top": lrctop + "px"
 					}, 100).find("p.cur").removeClass("cur");
 					child.addClass("cur");
+					myAudio.lrcStep = i;
 					break;
 				}
 			}
@@ -1107,6 +1105,7 @@ $(document).ready(function() {
 		var len = entries.length;
 		for(var i = 0; i < len; i++) {
 			if(entries[i].isFile) {
+				if(getFileType(entries[i].name) != 'audio') continue;
 				entries[i].filesystem.root.getFile(entries[i].fullPath, {create: false}, function(fileEntry) {
 					fileEntry.file(function(file) {
 						var sizeMB = (file.size / 1024 / 1024).toFixed(2);
@@ -1126,7 +1125,6 @@ $(document).ready(function() {
 						reader.readAsBinaryString(blob);
 						reader.onloadstart = function(e) {
 							$(".scanTipsLayer").show();
-							// $(".scanTips").append("<span class='songname-tips'>" + file.name + "</span>");
 							$(".scanTips").empty().append("<span class='songname-tips'>" + "正在扫描歌曲..." + "</span>");
 						};
 						reader.onprogress = function(e) {
@@ -1142,34 +1140,27 @@ $(document).ready(function() {
 							$(".scanTipsLayer").hide();
 							var result =  e.target.result;
 							// 获取mp3信息
-							localMusicIndex++;
-							localMusic.len = localMusicIndex;
+							// localMusicIndex++;
+							// localMusic.len = localMusicIndex;
 							var musicInfo = Mp3.getMp3Info(galleryId, result, fullPath);
 							$.indexedDB("localMusicDB").objectStore("musicList").add(musicInfo).done(function(res, event) {
 								localMusic.array.push(musicInfo);
-								addItem(localMusicIndex, musicInfo, "#GalleryList");
+								localMusic.len++;
+								addItem(localMusic.len, musicInfo, "#GalleryList");
 								recycleMusic.push({
 									tag: musicInfo.galleryId.toString()+","+musicInfo.fullPath,
-									id: parseInt(localMusicIndex)
+									id: parseInt(localMusic.len)
 								});
-								// // 保存歌手名
-								// if(localMusic.artist.indexOf(musicInfo.artistName) == -1) {
-								// 	localMusic.artist.push(musicInfo.artistName);
-								// 	$(".singer-list").append('<div class="singer-list-row"><div class="singername"><span>'+musicInfo.artistName.toString()+'</span></div></div>');
-								// }
 							});
 						};
 					});
 				});
-				////////////////////////////////////////////////////////////
-
 			}else if(entries[i].isDirectory) {
 				mGalleryDirectories.push(entries[i]);
 			}else {
 				console.log("Got something other than a file or directory.");
 			}
 		}
-
 		mGalleryReader.readEntries(scanSong, errorHandler('readMoreEntries'));
 	}
 
@@ -1177,17 +1168,32 @@ $(document).ready(function() {
 	function readFileAsPath(galleryId, fullPath) {
 		if(galleryId && fullPath) {
 			if(localMusic.currentID < 0) return ;
-			$(".title .artist").text(localMusic.array[localMusic.currentID].artistName);
-			$(".title .songname").text(localMusic.array[localMusic.currentID].songName);
 			var gallery = mGalleryObj[galleryId.toString()];
-
-			gallery.root.getFile(fullPath, {create: false}, function(fileEntry) {
-				fileEntry.file(function(file) {
-					var src = window.webkitURL.createObjectURL(file);
-					myAudio.setSrc(src);
-					myAudio.play();
+			if(!gallery) {
+				var base = {
+					type: "basic",
+					title: "播放错误Error",
+					message: "请在扫描文件菜单添加本目录～",
+					iconUrl: "../dist/img/music_player48.png"
+				};
+				notifyID++;
+				(function(id) {
+					setTimeout(function() {
+						chrome.notifications.clear(id, function() {});
+					}, 5000);
+				})("id" + notifyID);
+				chrome.notifications.create("id" + notifyID, base, function() {});
+			}else {
+				$(".title .artist").text(localMusic.array[localMusic.currentID].artistName);
+				$(".title .songname").text(localMusic.array[localMusic.currentID].songName);
+				gallery.root.getFile(fullPath, {create: false}, function(fileEntry) {
+					fileEntry.file(function(file) {
+						var src = window.webkitURL.createObjectURL(file);
+						myAudio.setSrc(src);
+						myAudio.play();
+					});
 				});
-			});
+			}
 		}else {
 			console.error("readFileAsPath Error");
 		}
@@ -1215,6 +1221,7 @@ $(document).ready(function() {
 			if(category == "localMusic") {
 				obj.artist = [];
 				map = {};
+				mGalleryObj = {};
 			}
 			obj.array = [];
 		}else {
@@ -1225,6 +1232,7 @@ $(document).ready(function() {
 		if(category == "localMusic") {
 			$.indexedDB("localMusicDB").objectStore("musicList").each(function(item) {
 				map[item.value.galleryId+"/"+item.value.fullPath] = true;
+				// mGalleryObj[item.value.galleryId]
 				obj.array.push(item.value);
 				addItem(cnt, item.value, "#GalleryList");
 				cnt++;
@@ -1271,7 +1279,7 @@ $(document).ready(function() {
 		if(results.length) {
 			var str = "<span>";
 			mGalleryArray = [];
-			mGalleryObj = {};
+			// mGalleryObj = {};
 			results.forEach(function(item, index, arr) {
 				var mData = chrome.mediaGalleries.getMediaFileSystemMetadata(item);
 				if(mData) {
@@ -1500,7 +1508,7 @@ $(document).ready(function() {
 			if(idx!=-1) {
 				// 删recycle数据库
 				$.indexedDB("recycleMusicDB").objectStore("musicList").delete(idx).done(function(res, event) {
-					var id
+					var id = -1;
 					recycleMusic.forEach(function(item, index, arr) {
 						if(item.galleryId == galleryId && item.fullPath == item.fullPath) {
 							id = index;
@@ -1626,7 +1634,6 @@ $(document).ready(function() {
 	$("#toggle").on('click', 'li', function(event) {
 		event.preventDefault();
 		var listID = $(this).attr('data-catid');
-		// C(listID);
 		$(".leftbar-outer > div#allSong").addClass('list-active').siblings().removeClass('list-active');
 		$(this).addClass('toggle-active').siblings().removeClass('toggle-active');
 		$("#leftCol2-"+listID).show().siblings().hide();
@@ -1987,8 +1994,8 @@ $(document).ready(function() {
 
 			// 远程
 			remote.playing(musicInfo);
-			$(".title .songname").text(musicInfo.songName);
-			$(".title .artist").text(musicInfo.artistName);
+			// $(".title .songname").text(musicInfo.songName);
+			// $(".title .artist").text(musicInfo.artistName);
 
 			searchPlaying = {};
 		}
@@ -2435,48 +2442,30 @@ $(document).ready(function() {
 
 	// 解析歌词
 	function parseLrc(lrc) {
-		var e = lrc.split(/[\r\n]/),
-		g = e.length,
-		j = {},
-		b = [],
-		c = 0;
-		var l = {
-			ti: "",
-			ar: "",
-			al: ""
-		};
-		for (; c < g;) {
-			var k, d = true,
-			h = decodeURIComponent(e[c]),
-			a = h.replace(/\[\d*:\d*((\.|\:)\d*)*\]/g, "");
-			"ti ar al".replace(/\S+/g, function(i) {
-				if (d && l[i] === "") {
-					k = h.match(new RegExp("\\[" + i + "\\:(.*?)\\]"));
-					if (k && k[1]) {
-						d = false;
-						l[i] = k[1];
-					}
-				}
-			});
-			if (a.length === 0) {
-				a = " …… ";
+		var rows = lrc.split(/[\r\n]/),
+			len = rows.length,
+			word = {},
+			time = [];
+		for (var i = 0; i < len; i++) {
+			var row = rows[i].replace(/\[\d*:\d*((\.|\:)\d*)*\]/g, "");
+			if (row.length === 0) {
+				row = " …… ";
 			}
-			h.replace(/\[(\d*):(\d*)([\.|\:]\d*)*\]/g, function() {
-				var i = arguments[1] | 0,
-				m = arguments[2] | 0,
-				o = i * 60 + m,
-				n = b.push(o * 1000);
-				j[b[--n]] = a.trim();
+			// 提取时间
+			rows[i].replace(/\[(\d*):(\d*)([\.|\:]\d*)*\]/g, function() {
+				var minute = arguments[1] | 0,
+					second = arguments[2] | 0,
+					ti = minute * 60 + second,
+					index = time.push(ti * 1000);//返回push后的下标
+				word[time[--index]] = row.trim();
 			});
-			c++;
 		}
-		b.sort(function(m, i) {
-			return m - i;
+		time.sort(function(a, b) {
+			return a - b;
 		});
 		return {
-			words: j,
-			times: b,
-			data: l
+			words: word,
+			times: time
 		};
 	}
 
@@ -2486,18 +2475,16 @@ $(document).ready(function() {
 		myAudio.lrcData = m;
 		var words = m.words,
 			times = m.times,
-			data = m.data,
-			b = 40; // 步距
+			b = 40; // 行高
 
 		var timeLength = times.length,
-			i = 0,
 			str = "",
 			top = parseInt($("#lrcWrapper").height()/2),
 			e = null;
 		if (times.length == 0) {
 			return;
 		}
-		for (; i < timeLength; i++) {
+		for (var i = 0; i < timeLength; i++) {
 			var step = times[i],
 			l = words[step];
 			if (step != e) {
@@ -2507,7 +2494,6 @@ $(document).ready(function() {
 			e = step;
 		}
 		$("#lrcContent").html(str);
-		// $("#lrcContent").css('margin-top', '240px');
 		$("#lrcContent").children(':first-child').addClass('cur');
 	}
 
@@ -2674,7 +2660,6 @@ $(document).ready(function() {
 	var offlineMusicHandler = {
 		writeFile: function(fileName, blob, callback) {
 			offlineFs.root.getFile(dirName + "/" + fileName + ".mp3", {create: true}, function(fileEntry) {
-				C(fileEntry);
 				fileEntry.createWriter(function(fileWriter) {
 					fileWriter.onwriteend = function(Y) {
 						console.log("Write completed.");
@@ -2712,7 +2697,6 @@ $(document).ready(function() {
 	};
 
 	var downloadHandler = function(url, musicInfo) {
-		// C(url);
 		$("#local").addClass('menu-active').siblings().removeClass('menu-active');
 		$("#localBody").show().siblings().hide();
 		$("#offlineList").addClass('list-active').siblings().removeClass('list-active');
@@ -2748,19 +2732,11 @@ $(document).ready(function() {
 		}
 		$("#OfflineList").prepend(div);
 		offlineMusic.downloading = true;
-		// ajax
+		// AJAX
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', url);
 		xhr.responseType = "blob";
-// 		xhr.timeout = 5000;
-// 		xhr.ontimeout = function(){
-// 　　　　	$("#downloadingID_"+id+" progress").remove();
-// 			$("#downloadingID_"+id+" div.c2").html('资源连接超时');
-// 　　　　　　xhr.abort();
-// 			return ;
-// 　　	}
 		xhr.onreadystatechange = function(){
-			// C(xhr.readyState+" "+xhr.status);
 　　　　	if ( xhr.status != 200 ) {
 				$("#downloadingID_"+id+" progress").remove();
 				$("#downloadingID_"+id+" div.c2").html('资源出错');
