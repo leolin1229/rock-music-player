@@ -2952,7 +2952,6 @@ $(document).ready(function() {
 			}else if(!isEmptyObject(searchPlaying)) {
 				musicInfo = searchPlaying;
 			}
-			// C(musicInfo);
 			downloadHandler(musicInfo.songLink, musicInfo);
 		}
 	});
