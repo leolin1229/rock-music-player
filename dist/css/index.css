@@ -103,9 +103,10 @@ header {
 .search-input {
 	background-color: inherit;
 	color: inherit;
-	/*height: 49px;*/
+	/* height: 49px; */
 	padding: 10px;
 	border: 0;
+	width: 76%;
 }
 
 .search-input:focus {

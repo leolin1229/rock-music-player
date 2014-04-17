@@ -2608,6 +2608,7 @@ $(document).ready(function() {
 	function renderLrc(m) {
 		$("#lrcContent").css('margin-top', '240px').empty();
 		myAudio.lrcData = m;
+		myAudio.lrcStep = 0;
 		var words = m.words,
 			times = m.times,
 			b = 40; // 行高
