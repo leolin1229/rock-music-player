@@ -1013,7 +1013,9 @@ $(document).ready(function() {
 					}
 				}
 			},
-			error: function(error) {}
+			error: function(error) {
+				showNetworkError();
+			}
 		});
 	}
 	// 打印错误信息
@@ -2094,6 +2096,9 @@ $(document).ready(function() {
 	
 	$("#OfflineList").on('dblclick', '.complete-offline-list-row', function(event) {
 		event.preventDefault();
+		if($('#fm-playing').length > 0){
+			$("#fm-playing").remove();
+		}
 		var _this = $(this);
 		myAudio.lrcLink = '';
 		var musicInfo = {
@@ -2360,7 +2365,7 @@ $(document).ready(function() {
 						});
 					}
 				},
-				error: function(error) {}
+				error: function(error) {showNetworkError();}
 			});
 		}
 	});
@@ -2676,7 +2681,9 @@ $(document).ready(function() {
 			statusCode: {
 				404: function() {C("404啊")}
 			},
-			error: function(error) {}
+			error: function(error) {
+				showNetworkError();
+			}
 		});
 	}
 
@@ -2699,7 +2706,7 @@ $(document).ready(function() {
 			statusCode: {
 				404: function() {C("404啊")}
 			},
-			error: function(error) {C(error);}
+			error: function(error) {showNetworkError();}
 		});
 	}
 
@@ -3006,6 +3013,21 @@ $(document).ready(function() {
 		if(obj.length === 0) return true;
 		if(Object.keys(obj).length === 0) return true;
 		return false;
+	}
+	function showNetworkError() {
+		var base = {
+			type: "basic",
+			title: '网络错误！',
+			message: '请检查网络连接',
+			iconUrl: "../dist/img/music_player48.png"
+		};
+		notifyID++;
+		(function(id) {
+			setTimeout(function() {
+				chrome.notifications.clear(id, function() {});
+			}, 5000);
+		})("id" + notifyID);
+		chrome.notifications.create("id" + notifyID, base, function() {});
 	}
 	// debug
 	function C(str) {

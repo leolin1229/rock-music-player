@@ -16,6 +16,7 @@
 ::-webkit-scrollbar-button {
 	display: none;
 }
+::-webkit-input-placeholder { color: #fff; }
 body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, form, fieldset, input, textarea, p, blockquote, th, td {
 	margin: 0;
 	padding: 0;
@@ -399,10 +400,10 @@ header {
 	display: block;
 	position: absolute;
 	left: 0;
-	top: 0;
+	top: -8px;
 	margin: -5px 0 0 -6px;
 	width: 18px;
-	height: 18px;
+	height: 20px;
 	outline: none;
 	z-index: 101;
 	cursor: pointer;
@@ -1040,10 +1041,13 @@ header {
   	40% { -webkit-transform: translateY(-10px); }
   	60% { -webkit-transform: translateY(-5px); }
 }
-
-#progressSlider a, #volSlider a {
+#progressSlider a {
 	color: #f67600;
-	font-size: 15px;
+	font-size: 26px;
+}
+#volSlider a {
+	color: #f67600;
+	font-size: 18px;
 }
 
 #settingLayer .layer-body-title::after {
