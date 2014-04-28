@@ -238,6 +238,22 @@ $(document).ready(function() {
 		}
 	}
 
+	myAudio.onErrorHandle = function() {
+		var base = {
+			type: "basic",
+			title: "【Error】播放错误",
+			message: "文件不存在",
+			iconUrl: "../dist/img/music_player48.png"
+		};
+		notifyID++;
+		(function(id) {
+			setTimeout(function() {
+				chrome.notifications.clear(id, function() {});
+			}, 5000);
+		})("id" + notifyID);
+		chrome.notifications.create("id" + notifyID, base, function() {});
+	}
+	
 	myAudio.setSrc = function(src) {
 		myAudio.audioEle.pause();
 		$(".slider-range").css('width', '0%');

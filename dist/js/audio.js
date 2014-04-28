@@ -80,7 +80,7 @@ var audio = {
 		_audio.addEventListener('canplay', this.onCanPlay, false);
 		_audio.addEventListener('play', this.onPlay, false);
 		_audio.addEventListener('pause', this.onPause, false);
-		// _audio.addEventListener('ended', this.onEnded, false);// 为什么无法Ended事件？
+		// _audio.addEventListener('ended', this.onEnded, false);
 		_audio.addEventListener('error', this.onError, false);
 		_audio.addEventListener('timeupdate', this.onTimeUpdate, false);
 		_audio.volume = 0.5;
@@ -172,7 +172,12 @@ var audio = {
 			audio.onTimeUpdateHandle();
 		}
 	},
-	onTimeUpdateHandle: function() {}
+	onTimeUpdateHandle: function() {},
+	onError: function() {
+		if(typeof audio.onErrorHandle === 'function') {
+			audio.onErrorHandle();
+		}
+	}
 };
 function C(str) {
 	console.log(str);
